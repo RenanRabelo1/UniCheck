@@ -1,66 +1,33 @@
-type UserProfile = {
-  name: string
-  registration: string
-  roleLabel: string
-}
+import { useDashboard } from '../modules/dashboard/useDashboard'
+import { DashboardSession } from '../modules/dashboard/dashboard.types'
 
 type UserDashboardProps = {
-  user: UserProfile
+  session: DashboardSession
   onLogout: () => void
 }
 
-const recentActivity = [
-  {
-    icon: '▣',
-    title: 'Notebook Dell Latitude + carregador',
-    detail: 'Solicitado hoje, 14:15 · Retirada autorizada na secretaria',
-    status: 'Aprovada',
-    tone: 'approved',
-  },
-  {
-    icon: '◉',
-    title: 'Projetor Epson WXGA + adaptador HDMI/USB-C',
-    detail: 'Em posse desde 23/10, 09:30 · Patrimônio #24810',
-    status: 'Em posse',
-    tone: 'active',
-  },
-  {
-    icon: '◈',
-    title: 'Kit Arduino e Sensores IoT - Bancada B02',
-    detail: 'Devolvido em 21/10, 17:45 · Conferido pela equipe de suporte',
-    status: 'Devolvida',
-    tone: 'returned',
-  },
-]
+export function UserDashboard({ session, onLogout }: UserDashboardProps) {
+  const { data, error, isLoading, reload } = useDashboard(session)
 
-const summaryCards = [
-  {
-    icon: '◷',
-    value: '01',
-    title: 'Pendentes',
-    description: 'Solicitações registradas aguardando validação pela secretaria.',
-    footer: 'Ver detalhes do pedido',
-    accent: 'soft',
-  },
-  {
-    icon: '✓',
-    value: '02',
-    title: 'Aprovadas',
-    description: 'Itens autorizados e disponíveis para retirada no balcão.',
-    footer: 'Pronto para retirada',
-    accent: 'blue',
-  },
-  {
-    icon: '▣',
-    value: '03',
-    title: 'Materiais em posse',
-    description: 'Equipamentos sob sua custódia com devolução obrigatória.',
-    footer: 'Devolução até 22:40',
-    accent: 'strong',
-  },
-]
+  if (isLoading) {
+    return <main className="dashboard-feedback" role="status">Carregando painel...</main>
+  }
 
-export function UserDashboard({ user, onLogout }: UserDashboardProps) {
+  if (error || !data) {
+    return (
+      <main className="dashboard-feedback" role="alert">
+        <p>{error ?? 'Não foi possível carregar o painel.'}</p>
+        <button type="button" onClick={() => void reload()}>Tentar novamente</button>
+      </main>
+    )
+  }
+
+  const { user, summary, recentActivity } = data
+  const summaryCards = [
+    { icon: '◷', value: summary.pending, title: 'Pendentes', description: 'Solicitações registradas aguardando validação pela secretaria.', footer: 'Ver detalhes do pedido', accent: 'soft' },
+    { icon: '✓', value: summary.approved, title: 'Aprovadas', description: 'Itens autorizados e disponíveis para retirada no balcão.', footer: 'Pronto para retirada', accent: 'blue' },
+    { icon: '▣', value: summary.inPossession, title: 'Materiais em posse', description: 'Equipamentos sob sua custódia com devolução obrigatória.', footer: 'Devolução até 22:40', accent: 'strong' },
+  ]
   return (
     <main className="dashboard-page">
       <header className="dashboard-header">
@@ -120,7 +87,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             <article className={`summary-card ${card.accent}`} key={card.title}>
               <div className="summary-top">
                 <span className="summary-icon">{card.icon}</span>
-                <strong>{card.value}</strong>
+                <strong>{String(card.value).padStart(2, '0')}</strong>
               </div>
               <h2>{card.title}</h2>
               <p>{card.description}</p>
