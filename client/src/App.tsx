@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react'
+import { UserDashboard } from './components/UserDashboard'
 
 type Role = 'professor' | 'student' | 'coordinator'
 
@@ -29,6 +30,7 @@ function App() {
   const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'error' | 'success'>('error')
+  const [showDashboard, setShowDashboard] = useState(false)
 
   const isStudent = role === 'student'
   const currentRole = roles.find((item) => item.id === role)!
@@ -65,8 +67,13 @@ function App() {
       return
     }
 
-    setMessage('Dados validados. A autenticação será conectada à API na próxima etapa.')
-    setMessageType('success')
+    if (role === 'coordinator') {
+      setMessage('Dados validados. O painel administrativo será conectado à API na próxima etapa.')
+      setMessageType('success')
+      return
+    }
+
+    setShowDashboard(true)
   }
 
   function fillQuickAccess(item: (typeof quickAccess)[number]) {
@@ -75,6 +82,25 @@ function App() {
     setPassword('')
     setMessage('Dados de demonstração preenchidos. Informe uma senha para continuar.')
     setMessageType('success')
+  }
+
+  if (showDashboard) {
+    const isStudentDashboard = role === 'student'
+    return (
+      <UserDashboard
+        user={{
+          name: isStudentDashboard ? 'Lucas Almeida' : 'Prof. Ricardo Mendes',
+          registration: isStudentDashboard ? 'aluno.autorizado@unifor.br' : '2048819/CCT',
+          roleLabel: isStudentDashboard ? 'Aluno autorizado' : 'Professor',
+        }}
+        onLogout={() => {
+          setShowDashboard(false)
+          setPassword('')
+          setMessage('Sessão encerrada.')
+          setMessageType('success')
+        }}
+      />
+    )
   }
 
   return (
