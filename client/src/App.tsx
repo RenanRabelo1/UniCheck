@@ -88,9 +88,10 @@ function App() {
     const isStudentDashboard = role === 'student'
     return (
       <UserDashboard
-        user={{
+        session={{
           name: isStudentDashboard ? 'Lucas Almeida' : 'Prof. Ricardo Mendes',
           registration: isStudentDashboard ? 'aluno.autorizado@unifor.br' : '2048819/CCT',
+          role: isStudentDashboard ? 'student' : 'professor',
           roleLabel: isStudentDashboard ? 'Aluno autorizado' : 'Professor',
         }}
         onLogout={() => {

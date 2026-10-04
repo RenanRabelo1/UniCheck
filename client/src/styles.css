@@ -26,6 +26,7 @@ form { padding-top: 21px; }.access-type { margin-bottom: 12px; color: #535353; t
 
 /* Tela de Início do Usuário */
 .dashboard-page { min-height: 100vh; background: #f7fbff; color: #040404; }
+.dashboard-feedback { min-height: 100vh; display: grid; place-content: center; gap: 16px; background: #f7fbff; color: #535353; text-align: center; font-weight: 700; }.dashboard-feedback p { margin: 0; }.dashboard-feedback button { padding: 10px 16px; border: 0; border-radius: 99px; background: #004af7; color: #fff; font-weight: 800; }
 .dashboard-header { position: sticky; top: 0; z-index: 2; background: #fff; border-bottom: 1px solid #dcdcdc; box-shadow: 0 1px 8px rgb(4 74 247 / 4%); }
 .dashboard-header-content { width: min(1180px, calc(100% - 40px)); min-height: 68px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
 .dashboard-brand { display: flex; align-items: center; min-width: max-content; gap: 12px; }.dashboard-brand img { width: 70px; height: 28px; object-fit: contain; object-position: left; }.dashboard-brand > span { width: 1px; height: 28px; background: #dcdcdc; }.dashboard-brand strong,.dashboard-brand small { display: block; }.dashboard-brand strong { font-size: 15px; }.dashboard-brand small { margin-top: 2px; color: #535353; font-size: 10px; }
