@@ -4,9 +4,10 @@ import { DashboardSession } from '../modules/dashboard/dashboard.types'
 type UserDashboardProps = {
   session: DashboardSession
   onLogout: () => void
+  onNewRequest: () => void
 }
 
-export function UserDashboard({ session, onLogout }: UserDashboardProps) {
+export function UserDashboard({ session, onLogout, onNewRequest }: UserDashboardProps) {
   const { data, error, isLoading, reload } = useDashboard(session)
 
   if (isLoading) {
@@ -76,7 +77,7 @@ export function UserDashboard({ session, onLogout }: UserDashboardProps) {
 
         <section className="dashboard-actions" aria-label="Ações rápidas">
           <div className="action-buttons">
-            <button type="button" className="primary-action">⊕ Nova solicitação</button>
+            <button type="button" className="primary-action" onClick={onNewRequest}>⊕ Nova solicitação</button>
             <button type="button" className="secondary-action">◷ Minhas solicitações</button>
           </div>
           <p><b>ⓘ</b> Atendimento presencial no Bloco J-02: <strong>07h30 às 21h00</strong></p>
