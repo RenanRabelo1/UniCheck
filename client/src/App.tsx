@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react'
+import { NewRequestScreen } from './components/NewRequestScreen'
 import { UserDashboard } from './components/UserDashboard'
 
 type Role = 'professor' | 'student' | 'coordinator'
@@ -31,6 +32,7 @@ function App() {
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'error' | 'success'>('error')
   const [showDashboard, setShowDashboard] = useState(false)
+  const [showNewRequest, setShowNewRequest] = useState(false)
 
   const isStudent = role === 'student'
   const currentRole = roles.find((item) => item.id === role)!
@@ -86,16 +88,24 @@ function App() {
 
   if (showDashboard) {
     const isStudentDashboard = role === 'student'
+    const session = {
+      name: isStudentDashboard ? 'Lucas Almeida' : 'Prof. Ricardo Mendes',
+      registration: isStudentDashboard ? 'aluno.autorizado@unifor.br' : '2048819/CCT',
+      role: isStudentDashboard ? 'student' as const : 'professor' as const,
+      roleLabel: isStudentDashboard ? 'Aluno autorizado' : 'Professor',
+    }
+
+    if (showNewRequest) {
+      return <NewRequestScreen session={session} onBack={() => setShowNewRequest(false)} />
+    }
+
     return (
       <UserDashboard
-        session={{
-          name: isStudentDashboard ? 'Lucas Almeida' : 'Prof. Ricardo Mendes',
-          registration: isStudentDashboard ? 'aluno.autorizado@unifor.br' : '2048819/CCT',
-          role: isStudentDashboard ? 'student' : 'professor',
-          roleLabel: isStudentDashboard ? 'Aluno autorizado' : 'Professor',
-        }}
+        session={session}
+        onNewRequest={() => setShowNewRequest(true)}
         onLogout={() => {
           setShowDashboard(false)
+          setShowNewRequest(false)
           setPassword('')
           setMessage('Sessão encerrada.')
           setMessageType('success')
