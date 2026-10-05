@@ -4,3 +4,7 @@ coverage/
 .env
 .env.local
 *.log
+
+# Referências locais usadas apenas durante o desenvolvimento
+/docs/info/
+/docs/prototipos/CCT Controle de Empréstimos (1).zip
