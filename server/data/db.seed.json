@@ -1,0 +1,399 @@
+{
+  "usuarios": [
+    {
+      "id": "usr-prof-001",
+      "nome": "Prof. Ricardo Mendes",
+      "identificador": "2048819",
+      "matricula": "2048819/CCT",
+      "perfil": "PROFESSOR",
+      "autorizado": false,
+      "ativo": true,
+      "senhaHash": "$2b$10$xeLxjxhfFQHS4fvSQahMuejDh8NjtnkG1jrqbW3jA4p/EydGPGRDW"
+    },
+    {
+      "id": "usr-aluno-001",
+      "nome": "Lucas Almeida",
+      "identificador": "aluno.autorizado@unifor.br",
+      "matricula": "aluno.autorizado@unifor.br",
+      "perfil": "ALUNO",
+      "autorizado": true,
+      "ativo": true,
+      "senhaHash": "$2b$10$xeLxjxhfFQHS4fvSQahMuejDh8NjtnkG1jrqbW3jA4p/EydGPGRDW",
+      "autorizacao": {
+        "projeto": "Laboratório de Redes",
+        "professorResponsavelId": "usr-prof-001"
+      }
+    },
+    {
+      "id": "usr-aluno-002",
+      "nome": "Aluno Sem Autorização",
+      "identificador": "aluno.naoautorizado@unifor.br",
+      "matricula": "aluno.naoautorizado@unifor.br",
+      "perfil": "ALUNO",
+      "autorizado": false,
+      "ativo": true,
+      "senhaHash": "$2b$10$xeLxjxhfFQHS4fvSQahMuejDh8NjtnkG1jrqbW3jA4p/EydGPGRDW"
+    },
+    {
+      "id": "usr-coord-001",
+      "nome": "Coordenação CCT",
+      "identificador": "18024900",
+      "matricula": "18024900",
+      "perfil": "COORDENADOR",
+      "autorizado": false,
+      "ativo": true,
+      "senhaHash": "$2b$10$xeLxjxhfFQHS4fvSQahMuejDh8NjtnkG1jrqbW3jA4p/EydGPGRDW"
+    },
+    {
+      "id": "usr-func-001",
+      "nome": "Marcos Oliveira",
+      "identificador": "30011001",
+      "matricula": "30011001",
+      "perfil": "FUNCIONARIO",
+      "autorizado": false,
+      "ativo": true,
+      "senhaHash": "$2b$10$xeLxjxhfFQHS4fvSQahMuejDh8NjtnkG1jrqbW3jA4p/EydGPGRDW"
+    }
+  ],
+  "salas": [
+    {
+      "id": "j-201",
+      "codigo": "J-201",
+      "nome": "Laboratório de Redes",
+      "ativo": true
+    },
+    {
+      "id": "j-204",
+      "codigo": "J-204",
+      "nome": "Laboratório de Desenvolvimento",
+      "ativo": true
+    },
+    {
+      "id": "j-311",
+      "codigo": "J-311",
+      "nome": "Sala de Projetos",
+      "ativo": true
+    }
+  ],
+  "materiais": [
+    {
+      "id": "mat-projetor",
+      "nome": "Projetor Epson WXGA",
+      "detalhe": "Patrimônio #24810",
+      "quantidadeTotal": 1,
+      "ativo": true
+    },
+    {
+      "id": "mat-notebook",
+      "nome": "Notebook Dell Latitude + carregador",
+      "quantidadeTotal": 6,
+      "ativo": true
+    },
+    {
+      "id": "mat-hdmi",
+      "nome": "Cabo HDMI 2.0",
+      "quantidadeTotal": 8,
+      "ativo": true
+    },
+    {
+      "id": "mat-arduino",
+      "nome": "Kit Arduino e Sensores IoT",
+      "detalhe": "Bancada B02",
+      "quantidadeTotal": 3,
+      "ativo": true
+    }
+  ],
+  "chaves": [
+    {
+      "id": "chv-j201-p",
+      "salaId": "j-201",
+      "tipo": "PRIMARIA",
+      "ativo": true
+    },
+    {
+      "id": "chv-j204-p",
+      "salaId": "j-204",
+      "tipo": "PRIMARIA",
+      "ativo": true
+    },
+    {
+      "id": "chv-j204-s",
+      "salaId": "j-204",
+      "tipo": "SECUNDARIA",
+      "ativo": true
+    },
+    {
+      "id": "chv-j311-p",
+      "salaId": "j-311",
+      "tipo": "PRIMARIA",
+      "ativo": true
+    }
+  ],
+  "solicitacoes": [
+    {
+      "id": "sol-001",
+      "usuarioId": "usr-prof-001",
+      "criadoEm": "2026-10-05T14:15:00-03:00",
+      "salaId": "j-204",
+      "dataUtilizacao": "2026-10-06",
+      "retiradaPrevista": "08:00",
+      "devolucaoPrevista": "12:00",
+      "observacoes": "Aula de Desenvolvimento Web.",
+      "itens": [
+        {
+          "id": "item-001",
+          "tipo": "MATERIAL",
+          "referenciaId": "mat-notebook",
+          "nome": "Notebook Dell Latitude + carregador",
+          "quantidade": 1,
+          "status": "APROVADO",
+          "atualizadoEm": "2026-10-05T14:40:00-03:00",
+          "decididoPorId": "usr-coord-001"
+        },
+        {
+          "id": "item-002",
+          "tipo": "MATERIAL",
+          "referenciaId": "mat-hdmi",
+          "nome": "Cabo HDMI 2.0",
+          "quantidade": 2,
+          "status": "APROVADO",
+          "atualizadoEm": "2026-10-05T14:40:00-03:00",
+          "decididoPorId": "usr-coord-001"
+        }
+      ]
+    },
+    {
+      "id": "sol-002",
+      "usuarioId": "usr-prof-001",
+      "criadoEm": "2026-10-05T15:00:00-03:00",
+      "salaId": "j-204",
+      "dataUtilizacao": "2026-10-07",
+      "retiradaPrevista": "09:00",
+      "devolucaoPrevista": "11:00",
+      "itens": [
+        {
+          "id": "item-003",
+          "tipo": "MATERIAL",
+          "referenciaId": "mat-arduino",
+          "nome": "Kit Arduino e Sensores IoT",
+          "detalhe": "Bancada B02",
+          "quantidade": 1,
+          "status": "PENDENTE",
+          "atualizadoEm": "2026-10-05T15:00:00-03:00"
+        }
+      ]
+    },
+    {
+      "id": "sol-003",
+      "usuarioId": "usr-prof-001",
+      "criadoEm": "2026-10-04T16:30:00-03:00",
+      "salaId": "j-201",
+      "dataUtilizacao": "2026-10-05",
+      "retiradaPrevista": "09:00",
+      "devolucaoPrevista": "17:00",
+      "itens": [
+        {
+          "id": "item-004",
+          "tipo": "MATERIAL",
+          "referenciaId": "mat-projetor",
+          "nome": "Projetor Epson WXGA",
+          "detalhe": "Patrimônio #24810",
+          "quantidade": 1,
+          "status": "RETIRADO",
+          "atualizadoEm": "2026-10-05T09:30:00-03:00",
+          "decididoPorId": "usr-coord-001"
+        },
+        {
+          "id": "item-005",
+          "tipo": "MATERIAL",
+          "referenciaId": "mat-notebook",
+          "nome": "Notebook Dell Latitude + carregador",
+          "quantidade": 1,
+          "status": "RETIRADO",
+          "atualizadoEm": "2026-10-05T09:30:00-03:00",
+          "decididoPorId": "usr-coord-001"
+        },
+        {
+          "id": "item-006",
+          "tipo": "MATERIAL",
+          "referenciaId": "mat-hdmi",
+          "nome": "Cabo HDMI 2.0",
+          "quantidade": 1,
+          "status": "RETIRADO",
+          "atualizadoEm": "2026-10-05T09:30:00-03:00",
+          "decididoPorId": "usr-coord-001"
+        }
+      ]
+    },
+    {
+      "id": "sol-004",
+      "usuarioId": "usr-prof-001",
+      "criadoEm": "2026-10-02T10:00:00-03:00",
+      "salaId": "j-311",
+      "dataUtilizacao": "2026-10-02",
+      "retiradaPrevista": "13:00",
+      "devolucaoPrevista": "18:00",
+      "itens": [
+        {
+          "id": "item-007",
+          "tipo": "MATERIAL",
+          "referenciaId": "mat-arduino",
+          "nome": "Kit Arduino e Sensores IoT",
+          "detalhe": "Bancada B02",
+          "quantidade": 1,
+          "status": "DEVOLVIDO",
+          "atualizadoEm": "2026-10-02T17:45:00-03:00",
+          "decididoPorId": "usr-coord-001"
+        }
+      ]
+    },
+    {
+      "id": "sol-005",
+      "usuarioId": "usr-aluno-001",
+      "criadoEm": "2026-10-05T10:00:00-03:00",
+      "salaId": "j-201",
+      "dataUtilizacao": "2026-10-05",
+      "retiradaPrevista": "10:00",
+      "devolucaoPrevista": "18:00",
+      "itens": [
+        {
+          "id": "item-008",
+          "tipo": "CHAVE",
+          "referenciaId": "chv-j201-p",
+          "nome": "Chave J-201 · Primária",
+          "detalhe": "Laboratório de Redes",
+          "quantidade": 1,
+          "status": "RETIRADO",
+          "atualizadoEm": "2026-10-05T10:20:00-03:00",
+          "decididoPorId": "usr-coord-001"
+        }
+      ]
+    },
+    {
+      "id": "sol-006",
+      "usuarioId": "usr-aluno-001",
+      "criadoEm": "2026-10-01T18:00:00-03:00",
+      "salaId": "j-204",
+      "dataUtilizacao": "2026-10-01",
+      "retiradaPrevista": "18:00",
+      "devolucaoPrevista": "20:30",
+      "itens": [
+        {
+          "id": "item-009",
+          "tipo": "CHAVE",
+          "referenciaId": "chv-j204-s",
+          "nome": "Chave J-204 · Secundária",
+          "detalhe": "Laboratório de Desenvolvimento",
+          "quantidade": 1,
+          "status": "DEVOLVIDO",
+          "atualizadoEm": "2026-10-01T20:10:00-03:00",
+          "decididoPorId": "usr-coord-001"
+        }
+      ]
+    },
+    {
+      "id": "sol-007",
+      "usuarioId": "usr-aluno-001",
+      "criadoEm": "2026-10-05T11:00:00-03:00",
+      "salaId": "j-311",
+      "dataUtilizacao": "2026-10-06",
+      "retiradaPrevista": "14:00",
+      "devolucaoPrevista": "16:00",
+      "itens": [
+        {
+          "id": "item-010",
+          "tipo": "CHAVE",
+          "referenciaId": "chv-j311-p",
+          "nome": "Chave J-311 · Primária",
+          "detalhe": "Sala de Projetos",
+          "quantidade": 1,
+          "status": "PENDENTE",
+          "atualizadoEm": "2026-10-05T11:00:00-03:00"
+        }
+      ]
+    }
+  ],
+  "movimentacoes": [
+    {
+      "id": "mov-001",
+      "tipo": "RETIRADA",
+      "solicitacaoId": "sol-004",
+      "itemId": "item-007",
+      "itemNome": "Kit Arduino e Sensores IoT",
+      "registradoPorId": "usr-func-001",
+      "responsavel": "Prof. Ricardo Mendes",
+      "registradoEm": "2026-10-02T13:05:00-03:00"
+    },
+    {
+      "id": "mov-002",
+      "tipo": "DEVOLUCAO",
+      "solicitacaoId": "sol-004",
+      "itemId": "item-007",
+      "itemNome": "Kit Arduino e Sensores IoT",
+      "registradoPorId": "usr-func-001",
+      "responsavel": "Prof. Ricardo Mendes",
+      "registradoEm": "2026-10-02T17:45:00-03:00"
+    },
+    {
+      "id": "mov-003",
+      "tipo": "RETIRADA",
+      "solicitacaoId": "sol-006",
+      "itemId": "item-009",
+      "itemNome": "Chave J-204 · Secundária",
+      "registradoPorId": "usr-func-001",
+      "responsavel": "Lucas Almeida",
+      "registradoEm": "2026-10-01T18:10:00-03:00"
+    },
+    {
+      "id": "mov-004",
+      "tipo": "DEVOLUCAO",
+      "solicitacaoId": "sol-006",
+      "itemId": "item-009",
+      "itemNome": "Chave J-204 · Secundária",
+      "registradoPorId": "usr-func-001",
+      "responsavel": "Lucas Almeida",
+      "registradoEm": "2026-10-01T20:10:00-03:00"
+    },
+    {
+      "id": "mov-005",
+      "tipo": "RETIRADA",
+      "solicitacaoId": "sol-003",
+      "itemId": "item-004",
+      "itemNome": "Projetor Epson WXGA",
+      "registradoPorId": "usr-func-001",
+      "responsavel": "Prof. Ricardo Mendes",
+      "registradoEm": "2026-10-05T09:30:00-03:00"
+    },
+    {
+      "id": "mov-006",
+      "tipo": "RETIRADA",
+      "solicitacaoId": "sol-003",
+      "itemId": "item-005",
+      "itemNome": "Notebook Dell Latitude + carregador",
+      "registradoPorId": "usr-func-001",
+      "responsavel": "Prof. Ricardo Mendes",
+      "registradoEm": "2026-10-05T09:30:00-03:00"
+    },
+    {
+      "id": "mov-007",
+      "tipo": "RETIRADA",
+      "solicitacaoId": "sol-003",
+      "itemId": "item-006",
+      "itemNome": "Cabo HDMI 2.0",
+      "registradoPorId": "usr-func-001",
+      "responsavel": "Prof. Ricardo Mendes",
+      "registradoEm": "2026-10-05T09:30:00-03:00"
+    },
+    {
+      "id": "mov-008",
+      "tipo": "RETIRADA",
+      "solicitacaoId": "sol-005",
+      "itemId": "item-008",
+      "itemNome": "Chave J-201 · Primária",
+      "registradoPorId": "usr-func-001",
+      "responsavel": "Lucas Almeida",
+      "registradoEm": "2026-10-05T10:20:00-03:00"
+    }
+  ],
+  "alertas": []
+}

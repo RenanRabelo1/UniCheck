@@ -8,3 +8,7 @@ coverage/
 # Referências locais usadas apenas durante o desenvolvimento
 /docs/info/
 /docs/prototipos/CCT Controle de Empréstimos (1).zip
+
+# Banco JSON de trabalho do servidor (criado a partir de server/data/db.seed.json)
+/server/data/db.json
+/server/data/*.tmp

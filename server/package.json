@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "migrate": "tsx src/database/runMigrations.ts"
+    "migrate": "tsx src/database/runMigrations.ts",
+    "db:reset": "node -e \"require('fs').copyFileSync('data/db.seed.json','data/db.json')\""
   },
   "dependencies": {
     "bcrypt": "latest",
