@@ -2,10 +2,11 @@
   "name": "unicheck",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["client", "server"],
+  "workspaces": ["client", "server", "prof"],
   "scripts": {
     "dev:client": "npm run dev --workspace=@unicheck/client",
     "dev:server": "npm run dev --workspace=@unicheck/server",
+    "dev:prof": "npm run dev --workspace=prof",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "format": "npm run format --workspaces --if-present"
