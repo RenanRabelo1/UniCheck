@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react'
 import { NewRequestScreen } from './components/NewRequestScreen'
 import { UserDashboard } from './components/UserDashboard'
+import { StudentDashboard } from './components/StudentDashboard'
 
 type Role = 'professor' | 'student' | 'coordinator'
 
@@ -98,7 +99,21 @@ function App() {
     if (showNewRequest) {
       return <NewRequestScreen session={session} onBack={() => setShowNewRequest(false)} />
     }
-
+    if (isStudentDashboard) {
+      return (
+        <StudentDashboard
+          session={session}
+          onNewRequest={() => setShowNewRequest(true)}
+          onLogout={() => {
+            setShowDashboard(false)
+            setShowNewRequest(false)
+            setPassword('')
+            setMessage('Sessão encerrada.')
+            setMessageType('success')
+          }}
+        />
+      )
+    }
     return (
       <UserDashboard
         session={session}
