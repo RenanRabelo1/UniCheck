@@ -1,15 +1,16 @@
-import { useRef, useState } from 'react'
-import type { DashboardSession } from '../modules/dashboard/dashboard.types'
-import { useDashboard } from '../modules/dashboard/useDashboard'
-import './StudentDashboard.css'
+import { useRef, useState } from "react";
+import type { DashboardSession } from "../modules/dashboard/dashboard.types";
+import { useDashboard } from "../modules/dashboard/useDashboard";
+import "./StudentDashboard.css";
 
 type StudentDashboardProps = {
-  session: DashboardSession
-  onLogout: () => void
-  onNewRequest: () => void
-}
+  session: DashboardSession;
+  onLogout: () => void;
+  onNewRequest: () => void;
+  onMyRequests: () => void;
+};
 
-type IconName = 'home' | 'plus' | 'list' | 'check' | 'key' | 'logout'
+type IconName = "home" | "plus" | "list" | "check" | "key" | "logout";
 
 function Icon({ name }: { name: IconName }) {
   const paths = {
@@ -45,7 +46,7 @@ function Icon({ name }: { name: IconName }) {
       </>
     ),
     logout: <path d="M9 4H4v16h5M10 12h11m-4-4 4 4-4 4" />,
-  }
+  };
 
   return (
     <svg
@@ -61,44 +62,38 @@ function Icon({ name }: { name: IconName }) {
     >
       {paths[name]}
     </svg>
-  )
+  );
 }
 
 export function StudentDashboard({
   session,
   onLogout,
   onNewRequest,
+  onMyRequests,
 }: StudentDashboardProps) {
-  const { data, error, isLoading, reload } = useDashboard(session)
+  const { data, error, isLoading, reload } = useDashboard(session);
 
-  const activityRef = useRef<HTMLElement>(null)
-  const dialogRef = useRef<HTMLDialogElement>(null)
+  const activityRef = useRef<HTMLElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const [selectedActivity, setSelectedActivity] = useState<{
-    title: string
-    detail: string
-    status: string
-  } | null>(null)
-
-  function showActivity() {
-    activityRef.current?.scrollIntoView({ block: 'start' })
-    activityRef.current?.focus({ preventScroll: true })
-  }
+    title: string;
+    detail: string;
+    status: string;
+  } | null>(null);
 
   if (isLoading) {
     return (
       <main className="student-home student-feedback" role="status">
         Carregando painel do aluno...
       </main>
-    )
+    );
   }
 
   if (error || !data) {
     return (
       <main className="student-home student-feedback">
-        <p role="alert">
-          {error ?? 'Não foi possível carregar o painel.'}
-        </p>
+        <p role="alert">{error ?? "Não foi possível carregar o painel."}</p>
 
         <div className="student-actions">
           <button
@@ -108,62 +103,59 @@ export function StudentDashboard({
             Tentar novamente
           </button>
 
-          <button
-            className="student-button student-outline"
-            onClick={onLogout}
-          >
+          <button className="student-button student-outline" onClick={onLogout}>
             Voltar ao login
           </button>
         </div>
       </main>
-    )
+    );
   }
 
-  const { user, summary, recentActivity } = data
+  const { user, summary, recentActivity } = data;
 
   const initials = user.name
     .trim()
     .split(/\s+/)
     .slice(0, 2)
     .map((part) => part[0])
-    .join('')
+    .join("");
 
-  const today = new Intl.DateTimeFormat('pt-BR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date())
+  const today = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
 
   const summaryCards: {
-    title: string
-    value: number
-    description: string
-    icon: IconName
-    color: string
+    title: string;
+    value: number;
+    description: string;
+    icon: IconName;
+    color: string;
   }[] = [
     {
-      title: 'Solicitações pendentes',
+      title: "Solicitações pendentes",
       value: summary.pending,
-      description: 'Aguardando análise da secretaria',
-      icon: 'list',
-      color: 'orange',
+      description: "Aguardando análise da secretaria",
+      icon: "list",
+      color: "orange",
     },
     {
-      title: 'Solicitações aprovadas',
+      title: "Solicitações aprovadas",
       value: summary.approved,
-      description: 'Prontas para retirada',
-      icon: 'check',
-      color: 'green',
+      description: "Prontas para retirada",
+      icon: "check",
+      color: "green",
     },
     {
-      title: 'Materiais em posse',
+      title: "Materiais em posse",
       value: summary.inPossession,
-      description: 'Itens retirados e não devolvidos',
-      icon: 'key',
-      color: 'blue',
+      description: "Itens retirados e não devolvidos",
+      icon: "key",
+      color: "blue",
     },
-  ]
+  ];
 
   return (
     <div className="student-home">
@@ -193,7 +185,7 @@ export function StudentDashboard({
               Nova Solicitação
             </button>
 
-            <button onClick={showActivity}>
+            <button onClick={onMyRequests}>
               <Icon name="list" />
               Minhas Solicitações
             </button>
@@ -261,7 +253,7 @@ export function StudentDashboard({
 
             <button
               className="student-button student-outline"
-              onClick={showActivity}
+              onClick={onMyRequests}
             >
               <Icon name="list" />
               Minhas Solicitações
@@ -300,7 +292,7 @@ export function StudentDashboard({
             </span>
           </button>
 
-          <button className="student-shortcut" onClick={showActivity}>
+          <button className="student-shortcut" onClick={onMyRequests}>
             <span className="student-shortcut-icon">
               <Icon name="list" />
             </span>
@@ -321,10 +313,7 @@ export function StudentDashboard({
           <div className="student-activity-heading">
             <h2 id="student-activity-title">Atividade Recente</h2>
 
-            <button
-              className="student-link"
-              onClick={() => void reload()}
-            >
+            <button className="student-link" onClick={() => void reload()}>
               Atualizar
             </button>
           </div>
@@ -365,8 +354,8 @@ export function StudentDashboard({
                             title: item.title,
                             detail: item.detail,
                             status: item.status,
-                          })
-                          dialogRef.current?.showModal()
+                          });
+                          dialogRef.current?.showModal();
                         }}
                       >
                         Ver
@@ -414,5 +403,5 @@ export function StudentDashboard({
         </button>
       </dialog>
     </div>
-  )
+  );
 }
