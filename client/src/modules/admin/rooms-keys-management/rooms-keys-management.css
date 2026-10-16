@@ -1,0 +1,35 @@
+.rooms-keys-management { color: #172033; display: grid; gap: 1.5rem; max-width: 1200px; }
+.rooms-keys-management *, .rooms-keys-management *::before, .rooms-keys-management *::after { box-sizing: border-box; }
+.rooms-keys-management__header, .rooms-keys-management__panel-heading, .rooms-keys-management__catalog-grid { display: flex; gap: 1rem; justify-content: space-between; }
+.rooms-keys-management__header { align-items: flex-start; }
+.rooms-keys-management h1, .rooms-keys-management h2, .rooms-keys-management h3, .rooms-keys-management p { margin: 0; }
+.rooms-keys-management h1 { font-size: clamp(1.65rem, 4vw, 2.3rem); }
+.rooms-keys-management__eyebrow { color: #5b4db2; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.rooms-keys-management__demo-badge { background: #eeeafd; border-radius: 999px; color: #4b3c9d; font-weight: 700; padding: .5rem .8rem; white-space: nowrap; }
+.rooms-keys-management__notice { background: #eef7ff; border-left: 4px solid #2673b8; padding: .75rem 1rem; }
+.rooms-keys-management__grid { display: grid; gap: 1rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rooms-keys-management__panel, .rooms-keys-management__catalog { background: #fff; border: 1px solid #dce2ef; border-radius: .8rem; padding: 1.1rem; }
+.rooms-keys-management__panel-heading > span { color: #5c667a; font-size: .88rem; }
+.rooms-keys-management__room-list, .rooms-keys-management__key-list { display: grid; gap: .55rem; margin-top: 1rem; }
+.rooms-keys-management__room-list button, .rooms-keys-management__key-list > button { background: #f8f9fd; border: 1px solid #e1e6f0; border-radius: .55rem; cursor: pointer; display: grid; gap: .2rem; padding: .75rem; text-align: left; }
+.rooms-keys-management button.is-selected { border-color: #5b4db2; box-shadow: 0 0 0 2px #e4e0ff; }
+.rooms-keys-management small { color: #667085; }
+.rooms-keys-management__room-detail { display: grid; align-content: start; gap: .85rem; }
+.rooms-keys-management__room-detail ul { display: grid; gap: .6rem; list-style: none; margin: 0; padding: 0; }
+.rooms-keys-management__room-detail li { align-items: center; display: flex; gap: .55rem; justify-content: space-between; }
+.rooms-keys-management__room-detail li button, .rooms-keys-management__link-button { background: transparent; border: 0; color: #5040a0; cursor: pointer; font: inherit; padding: 0; text-decoration: underline; }
+.rooms-keys-management__form { display: grid; align-content: start; gap: .75rem; }
+.rooms-keys-management__form label { display: grid; font-size: .88rem; font-weight: 700; gap: .35rem; }
+.rooms-keys-management input, .rooms-keys-management select { border: 1px solid #c9d1df; border-radius: .4rem; font: inherit; padding: .58rem .65rem; width: 100%; }
+.rooms-keys-management__form > button, .rooms-keys-management__key-detail > button:not(.rooms-keys-management__link-button) { background: #5544a9; border: 0; border-radius: .45rem; color: #fff; cursor: pointer; font: inherit; font-weight: 700; padding: .65rem .8rem; }
+.rooms-keys-management button:disabled { cursor: not-allowed; opacity: .55; }
+.rooms-keys-management__catalog { display: grid; gap: 1rem; }
+.rooms-keys-management__catalog-grid { align-items: start; display: grid; grid-template-columns: 1.2fr 1fr 1fr; }
+.rooms-keys-management__key-detail { background: #f8f9fd; border-radius: .65rem; display: grid; gap: .75rem; padding: 1rem; }
+.rooms-keys-management__status { border-radius: 999px; font-size: .75rem; font-weight: 700; padding: .2rem .5rem; width: fit-content; }
+.rooms-keys-management__status--available { background: #dff7ea; color: #127344; }
+.rooms-keys-management__status--loaned { background: #fff1cf; color: #805400; }
+.rooms-keys-management__status--maintenance { background: #fce1e4; color: #a1263d; }
+.rooms-keys-management__history-note { color: #5d6678; font-size: .88rem; }
+@media (max-width: 900px) { .rooms-keys-management__grid, .rooms-keys-management__catalog-grid { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .rooms-keys-management__header, .rooms-keys-management__panel-heading { align-items: flex-start; flex-direction: column; } }
