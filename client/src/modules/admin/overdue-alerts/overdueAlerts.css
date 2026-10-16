@@ -1,0 +1,26 @@
+.overdue-alerts { color: #172033; display: grid; gap: 1.25rem; max-width: 1120px; }
+.overdue-alerts__header, .overdue-alerts__toolbar, .overdue-alerts__scanner, .overdue-alerts__item { align-items: center; display: flex; gap: 1rem; justify-content: space-between; }
+.overdue-alerts__header h1, .overdue-alerts__scanner h2, .overdue-alerts__item h2 { margin: 0; }
+.overdue-alerts__header p, .overdue-alerts__item p { margin: .25rem 0 0; }
+.overdue-alerts__eyebrow { color: #5f48c7; font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.overdue-alerts__notice, .overdue-alerts__scanner { background: #f4f1ff; border: 1px solid #dbd1ff; border-radius: .75rem; padding: 1rem; }
+.overdue-alerts__summary { display: grid; gap: 1rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.overdue-alerts__summary article { background: #fff; border: 1px solid #e2e5ec; border-radius: .75rem; display: grid; gap: .25rem; padding: 1rem; }
+.overdue-alerts__summary strong { color: #5f48c7; font-size: 1.75rem; }
+.overdue-alerts__toolbar { align-items: end; background: #fff; border: 1px solid #e2e5ec; border-radius: .75rem; padding: 1rem; }
+.overdue-alerts__toolbar label { display: grid; font-size: .875rem; font-weight: 700; gap: .35rem; }
+.overdue-alerts select, .overdue-alerts input { border: 1px solid #aeb6c7; border-radius: .4rem; font: inherit; padding: .55rem .65rem; }
+.overdue-alerts__scanner { display: grid; grid-template-columns: 1fr minmax(160px, 220px) auto; }
+.overdue-alerts__scanner output { color: #4b5568; grid-column: 1 / -1; }
+.overdue-alerts__button, .overdue-alerts__actions button { background: #fff; border: 1px solid #5f48c7; border-radius: .4rem; color: #4935a3; cursor: pointer; font: inherit; font-weight: 700; padding: .6rem .8rem; }
+.overdue-alerts__button--primary { background: #5f48c7; color: #fff; }
+.overdue-alerts__button--quiet { border-color: transparent; }
+.overdue-alerts__list { display: grid; gap: .75rem; }
+.overdue-alerts__item { align-items: start; background: #fff; border: 1px solid #e2e5ec; border-left: 4px solid #d65252; border-radius: .5rem; padding: 1rem; }
+.overdue-alerts__item-main { flex: 1; }
+.overdue-alerts__tag, .overdue-alerts__item-status span { background: #f2f4f7; border-radius: 999px; display: inline-block; font-size: .8rem; padding: .2rem .5rem; }
+.overdue-alerts__item-status { display: grid; gap: .4rem; text-align: right; }
+.overdue-alerts__actions { display: grid; gap: .5rem; }
+.overdue-alerts__feedback { background: #eaf7ef; border-radius: .5rem; color: #166534; margin: 0; padding: .75rem; }
+.overdue-alerts__empty { color: #4b5568; margin: 0; padding: 1rem; text-align: center; }
+@media (max-width: 760px) { .overdue-alerts__header, .overdue-alerts__toolbar, .overdue-alerts__scanner, .overdue-alerts__item { align-items: stretch; flex-direction: column; } .overdue-alerts__summary { grid-template-columns: 1fr; } .overdue-alerts__scanner { grid-template-columns: 1fr; } .overdue-alerts__scanner output { grid-column: auto; } .overdue-alerts__item-status { text-align: left; } }
