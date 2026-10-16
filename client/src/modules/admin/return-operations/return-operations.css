@@ -1,0 +1,60 @@
+.return-operations {
+  color: #172033;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  max-width: 1180px;
+  padding: 2rem;
+}
+
+.return-operations__header,
+.return-operations__section-heading,
+.return-operations__item,
+.return-operations__homologation {
+  align-items: center;
+  display: flex;
+  gap: 1.25rem;
+  justify-content: space-between;
+}
+
+.return-operations__header { margin-bottom: 1.5rem; }
+.return-operations h1, .return-operations h2, .return-operations p { margin: 0; }
+.return-operations h1 { font-size: clamp(1.55rem, 3vw, 2.25rem); margin-bottom: .4rem; }
+.return-operations h2 { font-size: 1.1rem; }
+.return-operations__eyebrow { color: #4169a6; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.return-operations__mode { background: #e9effb; border-radius: 999px; color: #254c87; font-size: .8rem; font-weight: 700; padding: .55rem .8rem; text-align: center; }
+.return-operations__layout { display: grid; gap: 1.25rem; grid-template-columns: minmax(230px, .72fr) minmax(0, 1.8fr); }
+.return-operations__search, .return-operations__dossier, .return-operations__checklist, .return-operations__homologation, .return-operations__success { background: #fff; border: 1px solid #dbe2ee; border-radius: 14px; box-shadow: 0 5px 18px rgb(23 32 51 / 5%); padding: 1.25rem; }
+.return-operations__search > label, .return-operations__item > label, .return-operations__date-field { display: grid; font-size: .83rem; font-weight: 700; gap: .45rem; }
+.return-operations input, .return-operations select { border: 1px solid #aebbd0; border-radius: 8px; font: inherit; padding: .65rem; }
+.return-operations__record-list { display: grid; gap: .55rem; margin-top: 1rem; }
+.return-operations__record-list button { background: #f8faff; border: 1px solid #dbe2ee; border-radius: 9px; cursor: pointer; display: grid; gap: .25rem; padding: .85rem; text-align: left; }
+.return-operations__record-list button.is-selected { border-color: #4169a6; box-shadow: 0 0 0 2px #dfe9fb; }
+.return-operations__record-list span, .return-operations small { color: #53627a; }
+.return-operations__empty { color: #53627a; font-size: .9rem; }
+.return-operations__content { display: grid; gap: 1.25rem; }
+.return-operations__dossier { display: grid; gap: 1rem; }
+.return-operations__dossier dl { display: grid; gap: .8rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+.return-operations__dossier dl div { display: grid; gap: .16rem; }
+.return-operations dt { color: #63718a; font-size: .75rem; }
+.return-operations dd { font-size: .9rem; font-weight: 650; margin: 0; }
+.return-operations__checklist { display: grid; gap: .85rem; }
+.return-operations__section-heading > span { color: #53627a; font-size: .82rem; font-weight: 700; }
+.return-operations__item { background: #f8faff; border-radius: 9px; padding: .9rem; }
+.return-operations__item-check { align-items: start; display: flex !important; flex: 1; grid-template-columns: none !important; }
+.return-operations__item-check input, .return-operations__consent input { accent-color: #315d9f; margin-top: .15rem; }
+.return-operations__item-check span { display: grid; gap: .25rem; }
+.return-operations__item > label:last-child { min-width: 180px; }
+.return-operations__homologation { align-items: end; flex-wrap: wrap; }
+.return-operations__homologation > div { flex: 1 1 260px; }
+.return-operations__date-field { min-width: 210px; }
+.return-operations__consent { display: flex; flex-basis: 100%; font-size: .88rem; gap: .55rem; }
+.return-operations__confirm { background: #274f8a; border: 0; border-radius: 8px; color: #fff; cursor: pointer; font: inherit; font-weight: 800; padding: .8rem 1rem; }
+.return-operations__confirm:disabled { background: #9aa9be; cursor: not-allowed; }
+.return-operations__error { color: #b42318 !important; }
+.return-operations__success { background: #effaf3; border-color: #9ddbb4; color: #14532d; display: grid; gap: .3rem; }
+
+@media (max-width: 800px) {
+  .return-operations { padding: 1rem; }
+  .return-operations__header, .return-operations__item { align-items: stretch; flex-direction: column; }
+  .return-operations__layout { grid-template-columns: 1fr; }
+  .return-operations__item > label:last-child { min-width: 0; }
+}
