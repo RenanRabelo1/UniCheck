@@ -1,0 +1,42 @@
+.materials-management { color: #1d2939; display: grid; gap: 1.25rem; font-family: Inter, Arial, sans-serif; max-width: 1200px; padding: 1.5rem; }
+.materials-management__header { align-items: flex-start; display: flex; gap: 1rem; justify-content: space-between; }
+.materials-management__header h1 { font-size: 1.75rem; margin: .15rem 0 .4rem; }
+.materials-management__header p { color: #667085; margin: 0; }
+.materials-management__eyebrow { color: #155eef !important; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.materials-management__filters, .materials-management__advanced-filters { align-items: end; background: #f8fafc; border: 1px solid #e4e7ec; border-radius: .75rem; display: flex; flex-wrap: wrap; gap: 1rem; padding: 1rem; }
+.materials-management label { color: #344054; display: grid; font-size: .875rem; font-weight: 600; gap: .35rem; }
+.materials-management input, .materials-management select, .materials-management textarea { background: #fff; border: 1px solid #d0d5dd; border-radius: .4rem; color: #101828; font: inherit; font-weight: 400; min-height: 2.5rem; padding: .5rem .65rem; }
+.materials-management textarea { min-height: 5rem; resize: vertical; }
+.materials-management__filters label:first-child { flex: 1 1 260px; }
+.materials-management__summary { color: #475467; font-size: .9rem; }
+.materials-management__table-wrapper { border: 1px solid #e4e7ec; border-radius: .75rem; overflow-x: auto; }
+.materials-management table { border-collapse: collapse; min-width: 760px; width: 100%; }
+.materials-management th, .materials-management td { border-bottom: 1px solid #eaecf0; padding: .85rem 1rem; text-align: left; }
+.materials-management th { background: #f9fafb; color: #475467; font-size: .75rem; text-transform: uppercase; }
+.materials-management td { font-size: .9rem; }
+.materials-management td span { color: #667085; display: block; font-size: .78rem; margin-top: .2rem; }
+.materials-management__status { border-radius: 1rem; display: inline-block !important; font-weight: 700; padding: .2rem .55rem; }
+.materials-management__status--active { background: #ecfdf3; color: #027a48 !important; }
+.materials-management__status--inactive { background: #f2f4f7; color: #475467 !important; }
+.materials-management button { border: 0; border-radius: .4rem; cursor: pointer; font: inherit; font-weight: 700; padding: .65rem .9rem; }
+.materials-management__primary-button { background: #155eef; color: #fff; }
+.materials-management__secondary-button { background: #f2f4f7; color: #344054; }
+.materials-management__danger-button { background: #d92d20; color: #fff; }
+.materials-management__text-button, .materials-management__table-button { background: transparent; color: #155eef; padding-inline: .2rem; }
+.materials-management__empty { color: #667085; margin: 0; padding: 2rem; text-align: center; }
+.materials-management__backdrop { align-items: center; background: rgb(16 24 40 / 55%); display: flex; inset: 0; justify-content: center; padding: 1rem; position: fixed; z-index: 20; }
+.materials-management__modal { background: #fff; border-radius: .75rem; box-shadow: 0 20px 40px rgb(16 24 40 / 20%); max-height: calc(100vh - 2rem); overflow: auto; padding: 1.25rem; width: min(100%, 620px); }
+.materials-management__modal > header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 1rem; }
+.materials-management__modal h2 { font-size: 1.25rem; margin: 0; }
+.materials-management__modal > header button { background: transparent; color: #667085; font-size: 1.5rem; line-height: 1; padding: .15rem .4rem; }
+.materials-management__form { display: grid; gap: .85rem; }
+.materials-management fieldset { border: 1px solid #d0d5dd; border-radius: .4rem; display: flex; gap: 1.2rem; padding: .75rem; }
+.materials-management fieldset label { align-items: center; display: flex; font-weight: 400; }
+.materials-management fieldset input { min-height: auto; }
+.materials-management__modal-actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: flex-end; margin-top: 1.25rem; }
+.materials-management__details { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+.materials-management__details div { border-bottom: 1px solid #eaecf0; padding-bottom: .65rem; }
+.materials-management__details dt { color: #667085; font-size: .8rem; font-weight: 700; }
+.materials-management__details dd { margin: .2rem 0 0; }
+.materials-management__warning { background: #fffaeb; border-left: 3px solid #f79009; color: #7a2e0e; padding: .75rem; }
+@media (max-width: 620px) { .materials-management { padding: 1rem; } .materials-management__header { align-items: stretch; flex-direction: column; } .materials-management__details { grid-template-columns: 1fr; } }
