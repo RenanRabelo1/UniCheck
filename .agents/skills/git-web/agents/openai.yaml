@@ -1,0 +1,6 @@
+interface:
+  display_name: "Git Web"
+  short_description: "Publica mudanças web do UniCheck com segurança"
+  default_prompt: "Use $git-web para preparar o commit, push e PR desta alteração."
+policy:
+  allow_implicit_invocation: true

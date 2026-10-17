@@ -1,0 +1,69 @@
+.pending-requests {
+  color: #172033;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 32px;
+}
+
+.pending-requests__breadcrumb, .pending-requests__eyebrow { color: #65708a; font-size: 0.875rem; }
+.pending-requests__breadcrumb span { margin: 0 0.45rem; }
+.pending-requests__eyebrow { font-weight: 700; letter-spacing: 0.06em; margin: 0 0 0.45rem; text-transform: uppercase; }
+.pending-requests__header, .pending-requests__results-heading { align-items: flex-start; display: flex; gap: 1.5rem; justify-content: space-between; }
+.pending-requests__header { border-bottom: 1px solid #dce2ec; margin: 1rem 0 1.5rem; padding-bottom: 1.5rem; }
+.pending-requests h1, .pending-requests h2, .pending-request-card h3 { margin: 0; }
+.pending-requests__header > div > p:last-child, .pending-requests__results-heading p { color: #536078; margin: 0.5rem 0 0; }
+.pending-requests__demo-control { max-width: 14rem; }
+.pending-requests__filters { align-items: end; background: #f6f8fc; border: 1px solid #dce2ec; border-radius: 12px; display: grid; gap: 1rem; grid-template-columns: minmax(15rem, 2fr) minmax(18rem, 2fr) minmax(8rem, 1fr) minmax(8rem, 1fr) auto; padding: 1.25rem; }
+.pending-requests label, .pending-requests fieldset { color: #34415a; display: grid; font-size: 0.875rem; font-weight: 600; gap: 0.4rem; }
+.pending-requests fieldset { border: 0; margin: 0; padding: 0; }
+.pending-requests legend { margin-bottom: 0.4rem; }
+.pending-requests input, .pending-requests select { background: #fff; border: 1px solid #b8c3d6; border-radius: 7px; box-sizing: border-box; color: #172033; font: inherit; min-height: 2.6rem; padding: 0.55rem 0.7rem; width: 100%; }
+.pending-requests button { background: #143f8f; border: 1px solid #143f8f; border-radius: 7px; color: #fff; cursor: pointer; font: inherit; font-weight: 700; min-height: 2.6rem; padding: 0.55rem 0.85rem; }
+.pending-requests button:hover:not(:disabled), .pending-requests button:focus-visible { background: #0f3273; }
+.pending-requests button:focus-visible, .pending-requests input:focus-visible, .pending-requests select:focus-visible { outline: 3px solid #f2b705; outline-offset: 2px; }
+.pending-requests button:disabled { cursor: not-allowed; opacity: 0.5; }
+.pending-requests__period-options { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.pending-requests__period-options button { background: #fff; border-color: #b8c3d6; color: #34415a; min-height: 2.3rem; }
+.pending-requests__period-options button.is-selected { background: #dbe8ff; border-color: #143f8f; color: #143f8f; }
+.pending-requests__custom-dates { display: grid; gap: 0.5rem; grid-template-columns: 1fr 1fr; margin-top: 0.6rem; }
+.pending-requests__clear { background: transparent; border-color: transparent; color: #143f8f; }
+.pending-requests__clear:hover:not(:disabled), .pending-requests__clear:focus-visible { background: #e9effa; }
+.pending-requests__results { margin-top: 2rem; }
+.pending-requests__filtered { background: #e8f0ff; border-radius: 99px; color: #143f8f; font-size: 0.875rem; font-weight: 700; padding: 0.45rem 0.75rem; }
+.pending-requests__list { display: grid; gap: 0.85rem; margin-top: 1rem; }
+.pending-request-card { background: #fff; border: 1px solid #dce2ec; border-radius: 12px; display: grid; gap: 0.65rem; grid-template-columns: minmax(9rem, 1.2fr) minmax(10rem, 1.1fr) minmax(16rem, 2fr) auto; padding: 1.15rem; }
+.pending-request-card__identity { display: grid; align-content: start; gap: 0.45rem; }
+.pending-request-card__protocol { color: #143f8f; font-size: 0.78rem; font-weight: 800; }
+.pending-request-card__priority { border-radius: 99px; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.5rem; width: fit-content; }
+.pending-request-card__priority--alta { background: #ffebe9; color: #9f2d25; }
+.pending-request-card__priority--normal { background: #edf2f7; color: #536078; }
+.pending-request-card > p { color: #65708a; margin: -0.35rem 0 0; }
+.pending-request-card dl { display: grid; gap: 0.35rem; margin: 0; }
+.pending-request-card dl div { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.35rem; }
+.pending-request-card dt { color: #65708a; font-size: 0.8rem; }
+.pending-request-card dd { margin: 0; }
+.pending-request-card button { align-self: center; white-space: nowrap; }
+.pending-requests__state { align-items: center; border: 1px dashed #aebbd0; border-radius: 12px; color: #536078; display: grid; justify-items: center; margin-top: 1rem; min-height: 14rem; padding: 1.5rem; text-align: center; }
+.pending-requests__state h3 { color: #172033; margin: 0; }
+.pending-requests__state p { margin: 0.5rem 0 1rem; max-width: 34rem; }
+.pending-requests__state--error { border-color: #d95d55; }
+.pending-requests__spinner { animation: pending-requests-spin 0.8s linear infinite; border: 3px solid #dce2ec; border-radius: 50%; border-top-color: #143f8f; height: 1.5rem; width: 1.5rem; }
+.pending-requests__pagination { align-items: center; display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem; }
+
+@keyframes pending-requests-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .pending-requests__filters { grid-template-columns: 1fr 1fr; }
+  .pending-request-card { grid-template-columns: 1fr 1fr; }
+  .pending-request-card button { grid-column: 1 / -1; }
+}
+
+@media (max-width: 600px) {
+  .pending-requests { padding: 1.25rem; }
+  .pending-requests__header, .pending-requests__results-heading { flex-direction: column; }
+  .pending-requests__demo-control { max-width: none; width: 100%; }
+  .pending-requests__filters, .pending-request-card { grid-template-columns: 1fr; }
+  .pending-request-card dl div { grid-template-columns: 1fr; gap: 0.1rem; }
+  .pending-requests__pagination { justify-content: center; }
+}

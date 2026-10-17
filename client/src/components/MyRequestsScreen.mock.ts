@@ -1,0 +1,89 @@
+export type MyRequestStatus =
+  "in-possession" | "approved" | "pending" | "returned" | "rejected";
+
+export type MyRequest = {
+  id: string;
+  protocol: string;
+  requestedAt: string;
+  period: "2026.1" | "2025.2";
+  item: string;
+  secondaryItem?: string;
+  destination: string;
+  schedule: string;
+  status: MyRequestStatus;
+  instruction: string;
+};
+
+export const myRequestsMock: MyRequest[] = [
+  {
+    id: "request-148",
+    protocol: "CCT-2026-0148",
+    requestedAt: "24/09/2026, 09:15",
+    period: "2026.1",
+    item: "Chave da Sala J-02",
+    secondaryItem: "Projetor Epson WXGA + adaptador HDMI",
+    destination: "Sala J-02",
+    schedule: "07:30 - 11:10",
+    status: "in-possession",
+    instruction: "Devolver à secretaria até 21h00",
+  },
+  {
+    id: "request-147",
+    protocol: "CCT-2026-0147",
+    requestedAt: "24/09/2026, 08:00",
+    period: "2026.1",
+    item: "Chave da Sala J-204",
+    secondaryItem: "Laboratório de Redes e Infraestrutura",
+    destination: "Sala J-204",
+    schedule: "13:30 - 17:10",
+    status: "approved",
+    instruction: "Disponível para retirada no balcão J-02",
+  },
+  {
+    id: "request-146",
+    protocol: "CCT-2026-0146",
+    requestedAt: "23/09/2026, 16:45",
+    period: "2026.1",
+    item: "Kit Arduino e Sensores IoT",
+    secondaryItem: "Multímetro Digital Minipa",
+    destination: "Lab J-108",
+    schedule: "09:00 - 12:00",
+    status: "pending",
+    instruction: "Em análise pela coordenação",
+  },
+  {
+    id: "request-142",
+    protocol: "CCT-2026-0142",
+    requestedAt: "21/09/2026, 14:10",
+    period: "2026.1",
+    item: "Projetor Portátil Sony",
+    secondaryItem: "Caixa de Som Auxiliar",
+    destination: "Auditório CCT",
+    schedule: "14:30 - 17:30",
+    status: "returned",
+    instruction: "Devolvida em 21/09 às 17:20",
+  },
+  {
+    id: "request-139",
+    protocol: "CCT-2026-0139",
+    requestedAt: "18/09/2026, 10:35",
+    period: "2026.1",
+    item: "Chave do Laboratório J-05",
+    destination: "Lab J-05",
+    schedule: "16:00 - 18:00",
+    status: "rejected",
+    instruction: "Indisponível no horário solicitado",
+  },
+  {
+    id: "request-135",
+    protocol: "CCT-2026-0135",
+    requestedAt: "12/12/2025, 07:20",
+    period: "2025.2",
+    item: "Pincéis atômicos (3)",
+    secondaryItem: "Apagador magnético",
+    destination: "Sala J-01",
+    schedule: "07:30 - 11:10",
+    status: "returned",
+    instruction: "Devolvida sem ocorrências",
+  },
+];
