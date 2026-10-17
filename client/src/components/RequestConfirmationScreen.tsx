@@ -1,25 +1,11 @@
 import { useState } from "react";
+import type { RequestConfirmationData } from "./RequestFlow.types";
 import "./RequestConfirmationScreen.css";
 
-export type RequestConfirmationItem = {
-  id: string;
-  name: string;
-  category: string;
-  quantity: number;
-  unit?: string;
-  description?: string;
-  project?: string;
-  withdrawalLocation?: string;
-};
-
-export type RequestConfirmationData = {
-  usageDate: string;
-  location: string;
-  pickupTime: string;
-  returnTime: string;
-  notes?: string;
-  items: RequestConfirmationItem[];
-};
+export type {
+  RequestConfirmationData,
+  RequestConfirmationItem,
+} from "./RequestFlow.types";
 
 type RequestConfirmationScreenProps = {
   request: RequestConfirmationData;

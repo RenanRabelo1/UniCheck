@@ -1,11 +1,49 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { RequestConfirmationScreen } from "./components/RequestConfirmationScreen";
 
+afterEach(cleanup);
+
 describe("fluxos principais do frontend", () => {
+  it("navega do painel do professor para uma nova solicitação e encerra a sessão", async () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("Matrícula"), {
+      target: { value: "2048819" },
+    });
+    fireEvent.change(screen.getByLabelText("Senha"), {
+      target: { value: "senha-demo" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Acessar/ }));
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Nova solicitação/ }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Nova solicitação" }),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getAllByRole("button", {
+        name: /Voltar para (início|o painel inicial)/,
+      })[0],
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Encerrar sessão" }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Acesso ao Sistema" }),
+    ).toBeTruthy();
+    expect(screen.getByRole("status").textContent).toContain(
+      "Sessão encerrada",
+    );
+  });
+
   it("abre o painel administrativo após o login do coordenador", () => {
     render(<App />);
 
@@ -20,6 +58,81 @@ describe("fluxos principais do frontend", () => {
 
     expect(
       screen.getByRole("heading", { name: "Painel administrativo" }),
+    ).toBeTruthy();
+  });
+
+  it("abre o painel demonstrativo do aluno", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Aluno" }));
+    fireEvent.change(screen.getByLabelText("E-mail institucional"), {
+      target: { value: "aluno.autorizado@unifor.br" },
+    });
+    fireEvent.change(screen.getByLabelText("Senha"), {
+      target: { value: "senha-demo" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Acessar/ }));
+
+    expect(
+      await screen.findByRole("heading", { name: /Olá, Lucas Almeida/ }),
+    ).toBeTruthy();
+  });
+
+  it("permite ao professor consultar o catálogo e trazer uma seleção ao formulário", async () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("Matrícula"), {
+      target: { value: "2048819" },
+    });
+    fireEvent.change(screen.getByLabelText("Senha"), {
+      target: { value: "senha-demo" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Acessar/ }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Nova solicitação/ }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Consultar catálogo de materiais" }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Materiais disponíveis" }),
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Selecionar material" })[0],
+    );
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: "Usar na solicitação demonstrativa",
+      }),
+    );
+
+    expect(
+      (screen.getByLabelText("Material *") as HTMLSelectElement).value,
+    ).toBe("notebook");
+  });
+
+  it("abre o catálogo pelo item Materiais do painel do professor", async () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("Matrícula"), {
+      target: { value: "2048819" },
+    });
+    fireEvent.change(screen.getByLabelText("Senha"), {
+      target: { value: "senha-demo" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Acessar/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Materiais" }));
+
+    expect(
+      screen.getByRole("heading", { name: "Materiais disponíveis" }),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "← Voltar ao painel" }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: /Olá, Prof\. Ricardo Mendes/ }),
     ).toBeTruthy();
   });
 

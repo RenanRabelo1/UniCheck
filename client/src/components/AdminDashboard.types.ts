@@ -47,6 +47,14 @@ export type AdminMovement = {
   status: "Pendente" | "Aprovada" | "Em uso" | "Devolvida";
 };
 
+export type AdminDashboardDemoCopy = {
+  dateLabel: string;
+  shiftLabel: string;
+  activeFlowsLabel: string;
+  activeRequestsLabel: string;
+  initialFeedback: string;
+};
+
 export type AdminIconName =
   | "alert"
   | "analytics"

@@ -1,8 +1,33 @@
 import type {
+  AdminAction,
+  AdminDashboardDemoCopy,
   AdminMetric,
   AdminMovement,
   AdminQuickAction,
 } from "./AdminDashboard.types";
+
+export const adminDashboardDemoCopy: AdminDashboardDemoCopy = {
+  dateLabel: "Quarta-feira, 24 de setembro de 2026",
+  shiftLabel: "Turno diurno (07h30 — 21h00)",
+  activeFlowsLabel: "6 fluxos demonstrativos",
+  activeRequestsLabel:
+    "Exibindo 4 de 12 solicitações demonstrativas no turno atual",
+  initialFeedback:
+    "Painel em modo demonstrativo. Nenhuma ação desta tela altera solicitações, inventário ou registros de atendimento.",
+};
+
+export const adminDemoActionLabels: Record<AdminAction, string> = {
+  "review-requests": "A fila de solicitações seria aberta para análise",
+  "register-pickup": "O fluxo de retirada seria aberto",
+  "register-return": "O fluxo de devolução seria aberto",
+  "manage-inventory": "A consulta de materiais e chaves seria aberta",
+  "authorized-users": "A lista de usuários autorizados seria aberta",
+  reports: "A área de relatórios seria aberta",
+  requests: "A listagem de solicitações seria aberta",
+  operations: "A área de retiradas e devoluções seria aberta",
+  inventory: "O inventário seria aberto",
+  refresh: "Os indicadores demonstrativos seriam atualizados",
+};
 
 export const adminMetricsMock: AdminMetric[] = [
   {

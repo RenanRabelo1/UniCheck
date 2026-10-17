@@ -1,180 +1,101 @@
 # Estrutura do Projeto UniCheck
 
-Este documento explica a organização inicial do repositório e a responsabilidade de cada parte do sistema.
+Este documento descreve o checkout atual do UniCheck e separa o que já funciona no protótipo do que pertence ao roadmap de integração e MySQL.
 
-## Visão geral da arquitetura
-
-O UniCheck segue uma arquitetura em três camadas:
+## Runtime atual do protótipo
 
 ```text
-React (client) -> API REST Node.js (server) -> MySQL
+React/Vite (telas demonstrativas e mocks) -> API REST Node.js -> JSON
+                                                        server/data/db.json
 ```
 
-- O **client** apresenta as telas, coleta dados e consome a API.
-- O **server** aplica regras de negócio, valida permissões e acessa o banco.
-- O **MySQL** armazena usuários, solicitações, materiais, chaves e movimentações.
+- O client apresenta fluxos visuais e usa autenticação demonstrativa; ele ainda não chama `/auth/login`, não persiste sessão real e não integra as telas de solicitações e administração à API.
+- O server é uma API Express em TypeScript. Seus repositories ativos usam `server/src/database/jsonDatabase.ts`, que lê e grava `server/data/db.json` a partir do seed versionado `server/data/db.seed.json`.
+- `CORS_ORIGIN` é a variável de ambiente usada pelo servidor para definir origens autorizadas. `DATA_FILE` é opcional e permite trocar o arquivo JSON em testes ou uso local.
+
+## Roadmap de arquitetura
+
+```text
+React/Vite -> API REST Node.js -> MySQL
+```
+
+Esta é a arquitetura planejada, não a persistência atual. O projeto já inclui `mysql2` e `controle_emprestimos.sql` como referência do modelo futuro, mas não há conexão MySQL, migrations executáveis nem repositories SQL ativos. O script `migrate` referencia `src/database/runMigrations.ts`, arquivo que ainda não existe; portanto, não deve ser usado como instrução de setup atual.
 
 ## Estrutura raiz
 
 ```text
 UniCheck/
-├── client/
-├── server/
-├── docs/
-└── README.md
+├── client/                     # React, Vite e telas do protótipo
+├── server/                     # API Express e persistência JSON atual
+├── docs/                       # documentação técnica
+├── controle_emprestimos.sql    # modelo MySQL planejado
+├── agents.md                   # guia operacional
+└── README.md                   # apresentação resumida
 ```
 
-| Pasta/arquivo | Responsabilidade |
-| --- | --- |
-| `client/` | Aplicação web em React. |
-| `server/` | API REST em Node.js e regras do sistema. |
-| `docs/` | Diagramas, requisitos, protótipos e documentos técnicos. |
-| `README.md` | Apresentação resumida do projeto e da estrutura. |
-
-## Front-end: `client/`
-
-O front-end será construído em React. Ele não deve decidir regras críticas sozinho: deve apenas mostrar as opções permitidas e enviar dados para a API, que fará a validação definitiva.
+## Front-end atual
 
 ```text
-client/
-└── src/
-    ├── components/
-    ├── modules/
-    ├── routes/
-    └── services/
+client/src/
+├── components/                 # telas e componentes compartilhados
+├── modules/                    # módulos visuais e dados mockados
+├── services/                   # fronteira de comunicação HTTP
+├── App.tsx                     # composição, navegação e sessão demonstrativa
+└── styles.css                  # estilos globais
 ```
 
-| Pasta | Responsabilidade |
-| --- | --- |
-| `components/` | Componentes reutilizáveis, como botões, campos, tabelas, modais, cabeçalho e indicadores de status. |
-| `modules/` | Funcionalidades organizadas por domínio do sistema. Cada módulo pode conter páginas, componentes, hooks e arquivos de estilo próprios. |
-| `routes/` | Rotas da aplicação, proteção de páginas por perfil e redirecionamentos. |
-| `services/` | Comunicação com a API, por exemplo autenticação, solicitações, materiais, chaves e histórico. |
+`client/src/services/api.ts` concentra o suporte HTTP existente e usa `VITE_API_URL`. O dashboard pode escolher API quando `VITE_DATA_SOURCE=api`, mas os fluxos visuais desta etapa permanecem em mocks. A autenticação real, rotas protegidas e integração das mutações pertencem ao próximo marco, após aprovação do contrato de API.
 
-### Módulos do front-end
-
-| Módulo | Exemplos de telas e responsabilidades |
-| --- | --- |
-| `auth/` | Login, sessão, logout e identificação do perfil. |
-| `solicitacoes/` | Nova solicitação, termo, minhas solicitações e detalhes da solicitação. |
-| `materiais/` | Consulta de disponibilidade de materiais e itens solicitáveis por professores. |
-| `chaves/` | Consulta de salas/chaves e solicitação por alunos autorizados. |
-| `administrativo/` | Painel do coordenador, análise, retirada, devolução, cadastros, alertas e histórico. |
-
-## Back-end: `server/`
-
-O back-end será uma API REST em Node.js. A organização por módulos evita concentrar todas as regras em arquivos grandes e facilita a divisão do trabalho da equipe.
+## Back-end atual
 
 ```text
-server/
-└── src/
-    ├── database/
-    ├── middlewares/
-    ├── modules/
-    └── routes/
+server/src/
+├── app.ts                      # Express, CORS, rotas e erros
+├── server.ts                   # entrada HTTP e job de atrasos
+├── config.ts                   # PORT, CORS_ORIGIN, DATA_FILE e JWT
+├── database/
+│   ├── jsonDatabase.ts          # leitura e escrita do JSON
+│   └── types.ts
+├── middlewares/                # autenticação, validação e erros
+├── modules/                    # regras por domínio
+├── routes/                     # registro das rotas
+└── jobs/                       # processamento de atrasos
 ```
 
-| Pasta | Responsabilidade |
-| --- | --- |
-| `database/` | Conexão com MySQL, migrations, seeds e configurações do banco. |
-| `middlewares/` | Autenticação, autorização por perfil, tratamento de erros e validações comuns. |
-| `modules/` | Regras de negócio separadas por domínio. |
-| `routes/` | Registro das rotas de todos os módulos da API. |
+Os módulos seguem a divisão de responsabilidades entre rotas, controllers, services, repositories e validações. No estado atual, essa divisão opera sobre JSON; a substituição por MySQL exige decisão de contrato, migrations, repositories SQL, seed e testes de integração antes de ser considerada concluída.
 
-### Estrutura recomendada dentro de um módulo
+## Regras de domínio planejadas
 
-Quando um módulo começar a ser implementado, a estrutura recomendada é:
+As regras abaixo são a referência para a futura integração do sistema. Elas não comprovam que todas já estejam integradas às telas demonstrativas.
 
-```text
-server/src/modules/solicitacoes/
-├── solicitacao.routes.js
-├── solicitacao.controller.js
-├── solicitacao.service.js
-├── solicitacao.repository.js
-└── solicitacao.validation.js
+- Professor solicita materiais; aluno autorizado solicita chaves vinculadas a projeto e professor.
+- Coordenador aprova ou recusa cada item, e a recusa exige motivo.
+- Retirada exige aceite do termo; retirada e devolução presenciais registram responsável e horários reais.
+- Chaves registram a unidade física entregue e seu tipo, primária ou secundária.
+- Materiais e chaves são inativados, não excluídos quando há histórico.
+- Itens não devolvidos até 22:40 devem gerar ocorrência de atraso.
+
+## Configuração e comandos atuais
+
+Use `server/.env.example` e `client/.env.example` sem versionar arquivos `.env` ou segredos. O servidor lê `PORT`, `CORS_ORIGIN`, `DATA_FILE` e `JWT_SECRET`; o client usa `VITE_DATA_SOURCE` e `VITE_API_URL`.
+
+Na raiz de `UniCheck/`:
+
+```powershell
+npm.cmd run dev:client
+npm.cmd run dev:server
+npm.cmd run test
+npm.cmd run lint
+npm.cmd run format
+npm.cmd run build --workspace=@unicheck/client
+npm.cmd run build --workspace=@unicheck/server
+npm.cmd run db:reset --workspace=@unicheck/server
 ```
 
-| Arquivo | Responsabilidade |
-| --- | --- |
-| `*.routes.js` | Define URL, método HTTP e middlewares da rota. |
-| `*.controller.js` | Recebe a requisição HTTP e devolve a resposta. Não deve conter regra complexa. |
-| `*.service.js` | Aplica regras de negócio e orquestra operações. |
-| `*.repository.js` | Executa consultas SQL e acessa o MySQL. |
-| `*.validation.js` | Valida os dados recebidos antes de chamar o service. |
+`db:reset` restaura o JSON local a partir de `db.seed.json`. Não execute `migrate` como setup do protótipo enquanto `runMigrations.ts` não existir e a migração MySQL não for implementada.
 
-### Módulos do back-end
+## Próximos marcos
 
-| Módulo | Responsabilidade |
-| --- | --- |
-| `auth/` | Login, senha protegida, geração/validação de token e sessão. |
-| `usuarios/` | Perfis, permissões, alunos autorizados, projetos e professores responsáveis. |
-| `solicitacoes/` | Criação de solicitações, itens, termo de responsabilidade, aprovação e recusa por item. |
-| `materiais/` | Cadastro, disponibilidade, estoque, patrimônio e inativação de materiais. |
-| `chaves/` | Salas, chaves primárias/secundárias, disponibilidade e inativação. |
-| `movimentacoes/` | Retirada, devolução, responsável, horários reais e observações. |
-| `alertas/` | Verificação de atrasos às 22:40 e resolução de alertas após devolução. |
-
-## Regras essenciais do domínio
-
-As regras abaixo devem ser aplicadas no `service` do back-end, mesmo que a interface já limite as opções:
-
-- Professor solicita apenas materiais.
-- Aluno autorizado solicita apenas chaves.
-- Aluno precisa possuir autorização ativa, projeto e professor responsável.
-- Coordenador do CCT aprova ou recusa itens individualmente.
-- Toda recusa precisa de motivo.
-- Retirada exige aceite do termo de responsabilidade.
-- Funcionário registra retirada e devolução presencialmente, com data e horário reais.
-- A retirada de chave registra qual chave física, primária ou secundária, foi entregue.
-- Materiais e chaves são inativados, nunca removidos definitivamente.
-- Itens não devolvidos até 22:40 geram alerta de atraso.
-
-## Estados recomendados
-
-Os status devem ser centralizados como constantes ou enums para evitar textos diferentes no sistema.
-
-```text
-PENDENTE -> APROVADO -> RESERVADO -> RETIRADO -> DEVOLVIDO
-PENDENTE -> RECUSADO
-RETIRADO -> ATRASADO
-```
-
-Para um material individual ou uma chave, a disponibilidade pode seguir:
-
-```text
-DISPONIVEL | RESERVADO | EMPRESTADO | INATIVO
-```
-
-## Banco de dados e integridade
-
-O MySQL deve seguir o DER e o MER do projeto. Operações que alteram disponibilidade precisam ser feitas em transação, principalmente:
-
-- aprovação/reserva de um item;
-- confirmação de retirada;
-- confirmação de devolução;
-- atualização de estoque de itens controlados por quantidade.
-
-Isso reduz o risco de dois usuários receberem aprovação para o mesmo recurso.
-
-## Documentação: `docs/`
-
-| Pasta | Conteúdo esperado |
-| --- | --- |
-| `diagramas/` | DER, MER, diagrama de classes, casos de uso e arquitetura. |
-| `requisitos/` | Requisitos funcionais, não funcionais, regras de negócio e decisões do projeto. |
-| `prototipos/` | Referências do Figma Make, Stitch, telas e fluxo navegável. |
-
-## Próximos arquivos recomendados
-
-Após a criação da estrutura, os próximos arquivos a serem criados são:
-
-```text
-client/package.json
-server/package.json
-server/src/app.js
-server/src/server.js
-server/.env.example
-server/src/database/connection.js
-```
-
-Depois disso, a equipe pode iniciar pelo módulo de autenticação e pelo cadastro básico de materiais, salas e chaves.
+1. Aprovar o contrato de API e integrar autenticação, sessão e telas ao servidor.
+2. Planejar a migração MySQL com migrations, repositories, seed e testes de integração.
+3. Validar concorrência, autorização e persistência antes de tratar o sistema como pronto para ambiente multiusuário ou produção.

@@ -6,6 +6,7 @@ type UserDashboardProps = {
   onLogout: () => void;
   onNewRequest: () => void;
   onMyRequests: () => void;
+  onMaterials: () => void;
 };
 
 export function UserDashboard({
@@ -13,6 +14,7 @@ export function UserDashboard({
   onLogout,
   onNewRequest,
   onMyRequests,
+  onMaterials,
 }: UserDashboardProps) {
   const { data, error, isLoading, reload } = useDashboard(session);
 
@@ -82,7 +84,9 @@ export function UserDashboard({
             <button type="button" onClick={onMyRequests}>
               Minhas solicitações
             </button>
-            <a href="#materiais">Materiais</a>
+            <button type="button" onClick={onMaterials}>
+              Materiais
+            </button>
           </nav>
           <div className="profile-menu">
             <div className="profile-avatar" aria-hidden="true">

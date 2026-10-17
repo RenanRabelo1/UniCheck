@@ -9,6 +9,13 @@
   font: inherit;
 }
 
+.my-requests-page button:focus-visible,
+.my-requests-page input:focus-visible,
+.my-requests-page select:focus-visible {
+  outline: 3px solid #89a8ff;
+  outline-offset: 3px;
+}
+
 .my-requests-header {
   position: sticky;
   top: 0;

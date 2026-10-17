@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from "react";
 import {
+  adminDashboardDemoCopy,
+  adminDemoActionLabels,
   adminMetricsMock,
   adminMovementsMock,
   adminQuickActionsMock,
@@ -7,6 +9,7 @@ import {
 import type {
   AdminAction,
   AdminIconName,
+  AdminMetric,
   AdminSession,
 } from "./AdminDashboard.types";
 import "./AdminDashboard.css";
@@ -32,6 +35,13 @@ const navigation: {
   { label: "Usuários autorizados", icon: "badge", action: "authorized-users" },
   { label: "Relatórios", icon: "analytics", action: "reports" },
 ];
+
+const metricActions: Record<AdminMetric["id"], AdminAction> = {
+  pending: "review-requests",
+  approved: "operations",
+  "checked-out": "operations",
+  returns: "register-return",
+};
 
 const iconPaths: Record<AdminIconName, React.ReactNode> = {
   alert: (
@@ -171,17 +181,45 @@ export function AdminDashboard({
 }: AdminDashboardProps) {
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [demoFeedback, setDemoFeedback] = useState(
+    adminDashboardDemoCopy.initialFeedback,
+  );
   const location = session.location ?? "Secretaria CCT J-02";
 
   function runAction(action?: AdminAction) {
     setMenuOpen(false);
-    if (action) onAction?.(action);
+    if (!action) {
+      setDemoFeedback("Você já está no painel administrativo demonstrativo.");
+      return;
+    }
+
+    setDemoFeedback(
+      `Demonstração: ${adminDemoActionLabels[action]}. Nenhuma decisão, baixa ou atualização foi registrada.`,
+    );
+    onAction?.(action);
   }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const normalizedQuery = query.trim();
-    if (normalizedQuery) onSearch?.(normalizedQuery);
+    if (!normalizedQuery) {
+      setDemoFeedback(
+        "Informe uma matrícula, protocolo, patrimônio ou código de chave para simular uma busca.",
+      );
+      return;
+    }
+
+    setDemoFeedback(
+      `Demonstração: a busca por “${normalizedQuery}” foi encaminhada somente para navegação visual. Nenhum registro foi consultado ou alterado.`,
+    );
+    onSearch?.(normalizedQuery);
+  }
+
+  function viewRequest(requestId: string) {
+    setDemoFeedback(
+      `Demonstração: os detalhes de ${requestId} seriam exibidos. A solicitação continua sem qualquer alteração.`,
+    );
+    onViewRequest?.(requestId);
   }
 
   return (
@@ -277,8 +315,8 @@ export function AdminDashboard({
           <div className="admin-date">
             <Icon name="calendar" />
             <div>
-              <strong>Quarta-feira, 24 de setembro de 2026</strong>
-              <small>Turno diurno (07h30 — 21h00)</small>
+              <strong>{adminDashboardDemoCopy.dateLabel}</strong>
+              <small>{adminDashboardDemoCopy.shiftLabel}</small>
             </div>
             <button
               type="button"
@@ -313,6 +351,11 @@ export function AdminDashboard({
           </span>
         </form>
 
+        <p className="admin-demo-notice" role="status" aria-live="polite">
+          <Icon name="alert" size={17} />
+          <span>{demoFeedback}</span>
+        </p>
+
         <section className="admin-metrics" aria-label="Resumo operacional">
           {adminMetricsMock.map((metric) => (
             <article
@@ -332,15 +375,7 @@ export function AdminDashboard({
               <p>{metric.description}</p>
               <button
                 type="button"
-                onClick={() =>
-                  runAction(
-                    metric.id === "pending"
-                      ? "review-requests"
-                      : metric.id === "returns"
-                        ? "register-return"
-                        : "operations",
-                  )
-                }
+                onClick={() => runAction(metricActions[metric.id])}
               >
                 {metric.footer}
                 <Icon name="chevron" size={16} />
@@ -358,7 +393,7 @@ export function AdminDashboard({
                 atendimento presencial.
               </p>
             </div>
-            <span>6 fluxos ativos</span>
+            <span>{adminDashboardDemoCopy.activeFlowsLabel}</span>
           </div>
           <div className="admin-quick-grid">
             {adminQuickActionsMock.map((action) => (
@@ -433,7 +468,7 @@ export function AdminDashboard({
                       <td>
                         <button
                           type="button"
-                          onClick={() => onViewRequest?.(movement.id)}
+                          onClick={() => viewRequest(movement.id)}
                         >
                           Detalhes <Icon name="chevron" size={15} />
                         </button>
@@ -444,7 +479,7 @@ export function AdminDashboard({
               </table>
             </div>
             <p className="admin-table-note">
-              Exibindo 4 de 12 solicitações ativas no turno atual
+              {adminDashboardDemoCopy.activeRequestsLabel}
             </p>
           </div>
 

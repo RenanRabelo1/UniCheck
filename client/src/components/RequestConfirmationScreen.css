@@ -3,6 +3,11 @@
   background: #f7fbff;
   color: #040404;
 }
+.confirmation-page button:focus-visible,
+.confirmation-page input:focus-visible {
+  outline: 3px solid #89a8ff;
+  outline-offset: 3px;
+}
 .confirmation-header {
   background: #fff;
   border-bottom: 1px solid #dcdcdc;

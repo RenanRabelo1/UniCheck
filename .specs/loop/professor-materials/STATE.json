@@ -1,0 +1,99 @@
+{
+  "feature": "professor-materials",
+  "scope": "medium",
+  "config": {
+    "maxCycles": 2,
+    "maxTokens": 15000,
+    "maxTime": 900000,
+    "maxParallelAgents": 1,
+    "maxHealAttempts": 1,
+    "skipDesign": true,
+    "skipTasks": true
+  },
+  "phase": "deliver",
+  "cycle": 2,
+  "startTime": "2026-10-17T21:31:54.540Z",
+  "budgetUsed": {
+    "tokens": 0,
+    "time": 0
+  },
+  "budgetLimit": {
+    "tokens": 15000,
+    "time": 900000
+  },
+  "tasks": {},
+  "healingLog": [],
+  "transitions": [
+    {
+      "from": "spec",
+      "to": "implement",
+      "cycle": 1,
+      "timestamp": "2026-10-17T21:32:22.146Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 28
+    },
+    {
+      "from": "implement",
+      "to": "test",
+      "cycle": 1,
+      "timestamp": "2026-10-17T21:40:59.083Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 545
+    },
+    {
+      "from": "test",
+      "to": "deliver",
+      "cycle": 1,
+      "timestamp": "2026-10-17T21:40:59.154Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 545
+    },
+    {
+      "from": "deliver",
+      "to": "spec",
+      "cycle": 2,
+      "timestamp": "2026-10-17T21:41:39.676Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 585
+    },
+    {
+      "from": "spec",
+      "to": "implement",
+      "cycle": 2,
+      "timestamp": "2026-10-17T21:41:58.522Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 604
+    },
+    {
+      "from": "implement",
+      "to": "test",
+      "cycle": 2,
+      "timestamp": "2026-10-17T21:41:58.597Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 604
+    },
+    {
+      "from": "test",
+      "to": "deliver",
+      "cycle": 2,
+      "timestamp": "2026-10-17T21:41:58.666Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 604
+    }
+  ],
+  "circuitBreakers": {
+    "currentFailures": 0,
+    "consecutiveFailures": 0,
+    "taskFailures": {},
+    "cyclesWithoutProgress": 1,
+    "scopeDivergence": 0
+  },
+  "status": "complete"
+}

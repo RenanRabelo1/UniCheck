@@ -20,6 +20,11 @@
 .admin-shell input {
   font: inherit;
 }
+.admin-shell button:focus-visible,
+.admin-shell input:focus-visible {
+  outline: 3px solid #88a7ff;
+  outline-offset: 2px;
+}
 .sr-only {
   position: absolute;
   width: 1px;
@@ -301,6 +306,24 @@
   border-radius: 13px;
   background: #fff;
   box-shadow: 0 5px 20px rgba(22, 37, 69, 0.05);
+}
+.admin-demo-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 1320px;
+  margin: 12px auto 0;
+  padding: 10px 13px;
+  border: 1px solid #cfdcff;
+  border-radius: 10px;
+  background: #eef3ff;
+  color: #1e3e8d;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.admin-demo-notice svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
 }
 .admin-scanner-icon {
   display: grid;
@@ -780,6 +803,9 @@
   }
   .admin-scanner {
     flex-wrap: wrap;
+  }
+  .admin-demo-notice {
+    margin-top: 10px;
   }
   .admin-search-field {
     min-width: calc(100% - 58px);

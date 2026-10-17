@@ -1,0 +1,63 @@
+{
+  "feature": "unicheck-telas-08-16",
+  "scope": "complex",
+  "config": {
+    "maxCycles": 6,
+    "maxTokens": 60000,
+    "maxTime": 3600000,
+    "maxParallelAgents": 5,
+    "maxHealAttempts": 3,
+    "skipDesign": false,
+    "skipTasks": false
+  },
+  "phase": "implement",
+  "cycle": 1,
+  "startTime": "2026-10-16T23:03:40.782Z",
+  "budgetUsed": {
+    "tokens": 0,
+    "time": 0
+  },
+  "budgetLimit": {
+    "tokens": 60000,
+    "time": 3600000
+  },
+  "tasks": {},
+  "healingLog": [],
+  "transitions": [
+    {
+      "from": "spec",
+      "to": "design",
+      "cycle": 1,
+      "timestamp": "2026-10-16T23:16:42.089Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 781
+    },
+    {
+      "from": "design",
+      "to": "tasks",
+      "cycle": 1,
+      "timestamp": "2026-10-16T23:16:42.196Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 781
+    },
+    {
+      "from": "tasks",
+      "to": "implement",
+      "cycle": 1,
+      "timestamp": "2026-10-16T23:16:42.269Z",
+      "gateResult": "pass",
+      "tokensUsed": 0,
+      "elapsed": 781
+    }
+  ],
+  "circuitBreakers": {
+    "currentFailures": 0,
+    "consecutiveFailures": 0,
+    "taskFailures": {},
+    "cyclesWithoutProgress": 0,
+    "scopeDivergence": 0
+  },
+  "status": "running"
+}

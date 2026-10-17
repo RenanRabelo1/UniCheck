@@ -5,6 +5,7 @@ import type {
   AuthorizationsProjectsProps,
   AuthorizationState,
   Project,
+  ProjectState,
   StudentAuthorization,
 } from './types';
 import './authorizations-projects.css';
@@ -140,9 +141,13 @@ export function AuthorizationsProjects({ onStateChange }: AuthorizationsProjects
   };
 
   const toggleProject = (project: Project) => {
-    const nextProjects = projects.map((item) =>
+    const nextProjects: Project[] = projects.map((item) =>
       item.id === project.id
-        ? { ...item, state: item.state === 'ATIVO' ? 'INATIVO' : 'ATIVO', updatedAt: today }
+        ? {
+            ...item,
+            state: (item.state === 'ATIVO' ? 'INATIVO' : 'ATIVO') as ProjectState,
+            updatedAt: today,
+          }
         : item,
     );
 
