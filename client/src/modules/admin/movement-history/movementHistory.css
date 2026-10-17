@@ -1,0 +1,84 @@
+.movement-history {
+  color: #1f2937;
+  display: grid;
+  gap: 1.25rem;
+  max-width: 1200px;
+}
+
+.movement-history__header,
+.movement-history__quick-periods,
+.movement-history__filters,
+.movement-history__results,
+.movement-history__dossier {
+  background: #fff;
+  border: 1px solid #dce3ec;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.movement-history__header,
+.movement-history__dossier-heading,
+.movement-history__quick-periods,
+.movement-history__actions,
+.movement-history__filter-actions {
+  align-items: center;
+  display: flex;
+  gap: .75rem;
+  justify-content: space-between;
+}
+
+.movement-history h1,
+.movement-history h2,
+.movement-history p { margin: 0; }
+.movement-history h1 { font-size: 1.5rem; }
+.movement-history h2 { font-size: 1.125rem; }
+.movement-history__eyebrow { color: #2563eb; font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.movement-history__header p:not(.movement-history__eyebrow) { color: #64748b; margin-top: .35rem; }
+
+.movement-history button {
+  background: #fff;
+  border: 1px solid #9fb0c5;
+  border-radius: 6px;
+  color: #173b69;
+  cursor: pointer;
+  font: inherit;
+  padding: .5rem .75rem;
+}
+
+.movement-history button:hover { background: #edf4ff; }
+.movement-history__filter-actions button:first-child { background: #173b69; border-color: #173b69; color: #fff; }
+.movement-history__quick-periods { flex-wrap: wrap; justify-content: flex-start; }
+
+.movement-history__filters { display: grid; gap: 1rem; grid-template-columns: repeat(5, minmax(130px, 1fr)); }
+.movement-history label { display: grid; font-size: .875rem; font-weight: 600; gap: .35rem; }
+.movement-history input, .movement-history select { border: 1px solid #9fb0c5; border-radius: 6px; font: inherit; padding: .55rem; }
+.movement-history__filter-actions { align-self: end; justify-content: flex-start; }
+.movement-history__notice { background: #e9f3ff; border-left: 4px solid #2563eb; border-radius: 4px; padding: .75rem 1rem; }
+.movement-history__result-summary { margin-bottom: 1rem; }
+.movement-history__table-wrap { overflow-x: auto; }
+.movement-history table { border-collapse: collapse; min-width: 800px; width: 100%; }
+.movement-history th, .movement-history td { border-bottom: 1px solid #e2e8f0; padding: .8rem; text-align: left; vertical-align: top; }
+.movement-history th { color: #475569; font-size: .75rem; text-transform: uppercase; }
+.movement-history td small { color: #64748b; display: block; margin-top: .2rem; }
+.movement-history__status { border-radius: 999px; display: inline-block; font-size: .75rem; font-weight: 700; padding: .25rem .5rem; }
+.movement-history__status--concluido { background: #dcfce7; color: #166534; }
+.movement-history__status--pendente { background: #fef3c7; color: #92400e; }
+.movement-history__status--atrasado { background: #fee2e2; color: #b91c1c; }
+.movement-history__status--inativo { background: #e2e8f0; color: #475569; }
+.movement-history__empty { color: #64748b; text-align: center; }
+.movement-history__dossier { border-color: #93c5fd; }
+.movement-history__dossier dl { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 1rem 0; }
+.movement-history__dossier dl div { border-bottom: 1px solid #e2e8f0; padding-bottom: .55rem; }
+.movement-history__dossier dt { color: #64748b; font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+.movement-history__dossier dd { margin: .2rem 0 0; }
+.sr-only { height: 1px; margin: -1px; overflow: hidden; position: absolute; width: 1px; }
+
+@media (max-width: 900px) {
+  .movement-history__header { align-items: flex-start; flex-direction: column; }
+  .movement-history__filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .movement-history__header, .movement-history__actions, .movement-history__filter-actions { align-items: stretch; flex-direction: column; width: 100%; }
+  .movement-history__filters, .movement-history__dossier dl { grid-template-columns: 1fr; }
+}
