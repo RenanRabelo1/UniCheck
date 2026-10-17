@@ -11,6 +11,14 @@ type Material = {
   unit: string;
 };
 
+export type ProfessorMaterialSelection = Pick<Material, "id" | "name"> & {
+  quantity: number;
+};
+
+type ProfessorMaterialsCatalogProps = {
+  onUseSelection?: (selection: ProfessorMaterialSelection) => void;
+};
+
 const materials: Material[] = [
   { id: 'notebook', name: 'Notebook', category: 'Eletrônicos', description: 'Notebook para atividades em sala ou laboratório.', available: 8, unit: 'unidades' },
   { id: 'projector', name: 'Projetor multimídia', category: 'Audiovisual', description: 'Projetor com cabo HDMI para apresentações.', available: 2, unit: 'unidades' },
@@ -20,7 +28,9 @@ const materials: Material[] = [
 
 const categories: MaterialCategory[] = ['Todos', 'Eletrônicos', 'Apoio', 'Audiovisual'];
 
-export function ProfessorMaterialsCatalog() {
+export function ProfessorMaterialsCatalog({
+  onUseSelection,
+}: ProfessorMaterialsCatalogProps) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<MaterialCategory>('Todos');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -83,6 +93,15 @@ export function ProfessorMaterialsCatalog() {
           <input type="number" min="1" max={selectedMaterial.available} value={quantity} onChange={(event) => setQuantity(Math.min(selectedMaterial.available, Math.max(1, Number(event.target.value) || 1)))} aria-label="Quantidade" style={{ width: 70, padding: 8, border: '1px solid #abbfe9', borderRadius: 6 }} />
         </label>
         <span style={{ display: 'block', marginTop: 10, color: '#53627a', fontSize: 13 }}>Esta seleção existe apenas enquanto a tela estiver aberta.</span>
+        {onUseSelection && (
+          <button
+            type="button"
+            onClick={() => onUseSelection({ id: selectedMaterial.id, name: selectedMaterial.name, quantity })}
+            style={{ marginTop: 14, padding: '10px 14px', border: 0, borderRadius: 8, background: '#3867d6', color: 'white', cursor: 'pointer', fontWeight: 700 }}
+          >
+            Usar na solicitação demonstrativa
+          </button>
+        )}
       </aside>}
     </section>
   );

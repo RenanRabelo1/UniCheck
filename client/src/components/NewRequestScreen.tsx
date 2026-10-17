@@ -1,5 +1,6 @@
 import { FormEvent, useMemo, useState } from "react";
 import { DashboardSession } from "../modules/dashboard/dashboard.types";
+import { ProfessorMaterialsCatalog } from "../modules/professor-materials/ProfessorMaterialsCatalog";
 import type { RequestConfirmationData } from "./RequestConfirmationScreen";
 
 type NewRequestScreenProps = {
@@ -15,10 +16,10 @@ const rooms = [
 ];
 
 const materials = [
-  { value: "projector", label: "Projetor Epson WXGA · Patrimônio #24810" },
-  { value: "notebook", label: "Notebook Dell Latitude + carregador" },
-  { value: "hdmi", label: "Cabo HDMI 2.0 · 8 unidades disponíveis" },
-  { value: "arduino", label: "Kit Arduino e Sensores IoT · Bancada B02" },
+  { value: "projector", label: "Projetor multimídia" },
+  { value: "notebook", label: "Notebook" },
+  { value: "extension", label: "Extensão elétrica" },
+  { value: "webcam", label: "Webcam" },
 ];
 
 const keysByRoom: Record<string, { value: string; label: string }[]> = {
@@ -44,6 +45,7 @@ export function NewRequestScreen({
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
+  const [catalogOpen, setCatalogOpen] = useState(false);
 
   const itemOptions = useMemo(
     () => (isStudent ? (keysByRoom[room] ?? []) : materials),
@@ -286,8 +288,32 @@ export function NewRequestScreen({
                   </label>
                 )}
               </div>
+              {!isStudent && (
+                <button
+                  type="button"
+                  className="open-materials-catalog"
+                  onClick={() => setCatalogOpen((open) => !open)}
+                  aria-expanded={catalogOpen}
+                >
+                  {catalogOpen
+                    ? "Ocultar catálogo de materiais"
+                    : "Consultar catálogo de materiais"}
+                </button>
+              )}
             </div>
           </section>
+
+          {!isStudent && catalogOpen && (
+            <section className="request-section professor-materials-panel" aria-label="Catálogo de materiais do professor">
+              <ProfessorMaterialsCatalog
+                onUseSelection={({ id, quantity: selectedQuantity }) => {
+                  setItem(id);
+                  setQuantity(selectedQuantity);
+                  setCatalogOpen(false);
+                }}
+              />
+            </section>
+          )}
 
           {error && (
             <p className="request-error" role="alert">
