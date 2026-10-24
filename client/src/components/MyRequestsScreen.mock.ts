@@ -1,18 +1,5 @@
-export type MyRequestStatus =
-  "in-possession" | "approved" | "pending" | "returned" | "rejected";
-
-export type MyRequest = {
-  id: string;
-  protocol: string;
-  requestedAt: string;
-  period: "2026.1" | "2025.2";
-  item: string;
-  secondaryItem?: string;
-  destination: string;
-  schedule: string;
-  status: MyRequestStatus;
-  instruction: string;
-};
+import type { MyRequest } from "../modules/solicitacoes/types";
+export type { MyRequest, MyRequestStatus } from "../modules/solicitacoes/types";
 
 export const myRequestsMock: MyRequest[] = [
   {

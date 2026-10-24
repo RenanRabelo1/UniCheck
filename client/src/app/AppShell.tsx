@@ -1,3 +1,4 @@
+import { isApiMode } from "../services/api";
 import { useState, type FormEvent } from "react";
 import { AdminDashboard } from "../components/AdminDashboard";
 import { MyRequestsScreen } from "../components/MyRequestsScreen";
@@ -5,7 +6,7 @@ import type { MyRequest } from "../components/MyRequestsScreen.mock";
 import { NewRequestScreen } from "../components/NewRequestScreen";
 import { RequestConfirmationScreen } from "../components/RequestConfirmationScreen";
 import type { RequestConfirmationData } from "../components/RequestConfirmationScreen";
-import { RequestDetailsScreen } from "../components/RequestDetailsScreen";
+import { RequestDetailsLoader } from "../modules/solicitacoes/RequestDetailsLoader";
 import { StudentDashboard } from "../components/StudentDashboard";
 import { UserDashboard } from "../components/UserDashboard";
 import { DemoLogin } from "../modules/auth/DemoLogin";
@@ -21,7 +22,7 @@ import { ReturnOperations } from "../modules/admin/return-operations";
 import { RoomsKeysManagement } from "../modules/admin/rooms-keys-management/RoomsKeysManagement";
 import { ProfessorMaterialsCatalog } from "../modules/professor-materials/ProfessorMaterialsCatalog";
 import { AdminWorkspace } from "./AdminWorkspace";
-import { mapRequestDetails, type AdminView, type AppView } from "./navigation";
+import { type AdminView, type AppView } from "./navigation";
 
 export function AppShell() {
   const demoSession = useDemoSession();
@@ -31,12 +32,14 @@ export function AppShell() {
   const [selectedRequest, setSelectedRequest] = useState<MyRequest | null>(
     null,
   );
-  const [selectedAdminRequestId, setSelectedAdminRequestId] = useState<string | null>(null);
+  const [selectedAdminRequestId, setSelectedAdminRequestId] = useState<
+    string | null
+  >(null);
 
-  function submitLogin(event: FormEvent<HTMLFormElement>) {
+  async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (demoSession.login()) {
+    if (await demoSession.login()) {
       setActiveView("dashboard");
     }
   }
@@ -100,13 +103,25 @@ export function AppShell() {
           );
           break;
         case "admin-checkout":
-          screen = <CheckoutOperations onCheckoutConfirmed={() => goToAdminView("admin-return")} />;
+          screen = (
+            <CheckoutOperations
+              onCheckoutConfirmed={() => goToAdminView("admin-return")}
+            />
+          );
           break;
         case "admin-return":
-          screen = <ReturnOperations onReturnConfirmed={() => goToAdminView("admin-alerts")} />;
+          screen = (
+            <ReturnOperations
+              onReturnConfirmed={() => goToAdminView("admin-alerts")}
+            />
+          );
           break;
         case "admin-alerts":
-          screen = <OverdueAlertsPage onRegisterReturn={() => goToAdminView("admin-return")} />;
+          screen = (
+            <OverdueAlertsPage
+              onRegisterReturn={() => goToAdminView("admin-return")}
+            />
+          );
           break;
         case "admin-materials":
           screen = <MaterialsManagement />;
@@ -173,10 +188,7 @@ export function AppShell() {
     return (
       <main className="professor-materials-page">
         <div className="professor-materials-page__bar">
-          <button
-            type="button"
-            onClick={() => setActiveView("dashboard")}
-          >
+          <button type="button" onClick={() => setActiveView("dashboard")}>
             ← Voltar ao painel
           </button>
         </div>
@@ -204,7 +216,12 @@ export function AppShell() {
         request={requestForReview}
         onBack={() => setActiveView("dashboard")}
         onEdit={() => setActiveView("new-request")}
-        onConfirm={() => Promise.resolve()}
+        onConfirm={async () => {
+          if (isApiMode())
+            throw new Error(
+              "O envio de novos pedidos ainda não está disponível nesta versão. Nenhuma solicitação foi gravada.",
+            );
+        }}
         onSuccess={() => setActiveView("my-requests")}
       />
     );
@@ -226,12 +243,9 @@ export function AppShell() {
 
   if (activeView === "request-details") {
     return (
-      <RequestDetailsScreen
-        request={
-          selectedRequest
-            ? mapRequestDetails(selectedRequest, session)
-            : undefined
-        }
+      <RequestDetailsLoader
+        session={session}
+        selectedRequest={selectedRequest}
         onBack={() => setActiveView("my-requests")}
       />
     );

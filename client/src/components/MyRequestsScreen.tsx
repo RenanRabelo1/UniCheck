@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import { listRequests } from "../services/requests";
+import { isApiMode } from "../services/api";
+import { useRequestData } from "../modules/solicitacoes/useRequestData";
+import { useMemo, useState, useCallback } from "react";
 import type { DashboardSession } from "../modules/dashboard/dashboard.types";
 import {
   myRequestsMock,
@@ -15,7 +18,7 @@ export type MyRequestsScreenProps = {
 };
 
 type StatusFilter = "all" | MyRequestStatus;
-type PeriodFilter = "current" | "previous" | "all";
+type PeriodFilter = string;
 
 const statusDetails: Record<
   MyRequestStatus,
@@ -44,11 +47,6 @@ function normalize(value: string) {
     .toLocaleLowerCase("pt-BR");
 }
 
-function matchesPeriod(request: MyRequest, period: PeriodFilter) {
-  if (period === "all") return true;
-  return request.period === (period === "current" ? "2026.1" : "2025.2");
-}
-
 export function MyRequestsScreen({
   session,
   onBack,
@@ -57,11 +55,22 @@ export function MyRequestsScreen({
 }: MyRequestsScreenProps) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("current");
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("all");
+
+  const load = useCallback(
+    async (signal: AbortSignal) =>
+      isApiMode() ? listRequests(signal) : myRequestsMock,
+    [],
+  );
+  const { data, error, loading, retry } = useRequestData(load);
+  const requests = useMemo(() => data ?? [], [data]);
+  const periods = [...new Set(requests.map((request) => request.period))]
+    .sort()
+    .reverse();
 
   const statusCounts = useMemo(
     () =>
-      myRequestsMock.reduce<Record<MyRequestStatus, number>>(
+      requests.reduce<Record<MyRequestStatus, number>>(
         (counts, request) => ({
           ...counts,
           [request.status]: counts[request.status] + 1,
@@ -74,13 +83,13 @@ export function MyRequestsScreen({
           rejected: 0,
         },
       ),
-    [],
+    [requests],
   );
 
   const visibleRequests = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
 
-    return myRequestsMock.filter((request) => {
+    return requests.filter((request) => {
       const searchableText = normalize(
         [
           request.protocol,
@@ -96,16 +105,31 @@ export function MyRequestsScreen({
       return (
         (!normalizedQuery || searchableText.includes(normalizedQuery)) &&
         (statusFilter === "all" || request.status === statusFilter) &&
-        matchesPeriod(request, periodFilter)
+        (periodFilter === "all" || request.period === periodFilter)
       );
     });
-  }, [periodFilter, query, statusFilter]);
+  }, [requests, periodFilter, query, statusFilter]);
 
   const clearFilters = () => {
     setQuery("");
     setStatusFilter("all");
-    setPeriodFilter("current");
+    setPeriodFilter("all");
   };
+
+  if (loading || error)
+    return (
+      <main className="dashboard-feedback">
+        <button onClick={onBack}>Voltar para início</button>
+        {loading ? (
+          <p role="status">Carregando solicitações...</p>
+        ) : (
+          <>
+            <p role="alert">{error}</p>
+            <button onClick={retry}>Tentar novamente</button>
+          </>
+        )}
+      </main>
+    );
 
   return (
     <main className="my-requests-page">
@@ -158,7 +182,7 @@ export function MyRequestsScreen({
             <b>3477-3120</b>
           </p>
           <span className="my-requests-open">
-            <i /> Guichê J-02 aberto
+            <i /> Guichê J-02
           </span>
         </aside>
 
@@ -168,6 +192,9 @@ export function MyRequestsScreen({
               ▣ Gestão de recursos e chaves
             </span>
             <h1>Minhas solicitações</h1>
+            <button type="button" onClick={retry}>
+              Atualizar solicitações
+            </button>
             <p>
               Acompanhe o andamento das suas solicitações de materiais e chaves
               laboratoriais.
@@ -206,8 +233,11 @@ export function MyRequestsScreen({
                   setPeriodFilter(event.target.value as PeriodFilter)
                 }
               >
-                <option value="current">Semestre 2026.1</option>
-                <option value="previous">Semestre 2025.2</option>
+                {periods.map((period) => (
+                  <option key={period} value={period}>
+                    Semestre {period}
+                  </option>
+                ))}
                 <option value="all">Todo o histórico</option>
               </select>
             </label>
@@ -221,7 +251,7 @@ export function MyRequestsScreen({
             {filters.map((filter) => {
               const count =
                 filter.value === "all"
-                  ? myRequestsMock.length
+                  ? requests.length
                   : statusCounts[filter.value];
 
               return (
@@ -342,7 +372,11 @@ export function MyRequestsScreen({
           <section className="my-requests-empty" role="status">
             <span aria-hidden="true">⌕</span>
             <h2>Nenhuma solicitação encontrada</h2>
-            <p>Não encontramos solicitações com os filtros escolhidos.</p>
+            <p>
+              {requests.length
+                ? "Não encontramos solicitações com os filtros escolhidos."
+                : "Você ainda não possui solicitações registradas."}
+            </p>
             <button type="button" onClick={clearFilters}>
               Limpar filtros
             </button>
@@ -364,7 +398,7 @@ export function MyRequestsScreen({
             <span>◷</span>
             <div>
               <h2>Horário limite</h2>
-              <p>Chaves do Bloco J devem ser devolvidas até 21h00.</p>
+              <p>Respeite o prazo de devolução indicado nos detalhes.</p>
             </div>
           </article>
           <article>

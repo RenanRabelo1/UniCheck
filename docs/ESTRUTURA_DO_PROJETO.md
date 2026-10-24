@@ -9,7 +9,7 @@ React/Vite (telas demonstrativas e mocks) -> API REST Node.js -> JSON
                                                         server/data/db.json
 ```
 
-- O client apresenta fluxos visuais e usa autenticação demonstrativa; ele ainda não chama `/auth/login`, não persiste sessão real e não integra as telas de solicitações e administração à API.
+- O client possui login real e consulta de Minhas solicitações/Detalhes quando `VITE_DATA_SOURCE=api`. O token é guardado em sessionStorage e as consultas são restritas ao usuário. Criação de pedidos e administração ainda são demonstrativas. Consulte `GUIA_DUAS_TELAS.md`.
 - O server é uma API Express em TypeScript. Seus repositories ativos usam `server/src/database/jsonDatabase.ts`, que lê e grava `server/data/db.json` a partir do seed versionado `server/data/db.seed.json`.
 - `CORS_ORIGIN` é a variável de ambiente usada pelo servidor para definir origens autorizadas. `DATA_FILE` é opcional e permite trocar o arquivo JSON em testes ou uso local.
 
@@ -44,7 +44,7 @@ client/src/
 └── styles.css                  # estilos globais
 ```
 
-`client/src/services/api.ts` concentra o suporte HTTP existente e usa `VITE_API_URL`. O dashboard pode escolher API quando `VITE_DATA_SOURCE=api`, mas os fluxos visuais desta etapa permanecem em mocks. A autenticação real, rotas protegidas e integração das mutações pertencem ao próximo marco, após aprovação do contrato de API.
+`client/src/services/api.ts` concentra o suporte HTTP existente e usa `VITE_API_URL`. O dashboard pode escolher API quando `VITE_DATA_SOURCE=api`, e as duas telas de consulta usam API autenticada. A integração das mutações e dos módulos administrativos permanece pendente.
 
 ## Back-end atual
 

@@ -1,3 +1,5 @@
+import { isApiMode } from "../../services/api";
+import { loginApi } from "../../services/auth";
 import { useState } from "react";
 import {
   createDemoSession,
@@ -32,7 +34,7 @@ export function useDemoSession() {
     setMessage("");
   }
 
-  function login(): boolean {
+  function login(): boolean | Promise<boolean> {
     if (!identifier.trim()) {
       setMessage(`Informe ${identifierLabel.toLowerCase()}.`);
       setMessageType("error");
@@ -51,6 +53,23 @@ export function useDemoSession() {
       return false;
     }
 
+    if (isApiMode()) {
+      setMessage("Entrando...");
+      setMessageType("success");
+      return loginApi(identifier.trim(), password, role)
+        .then((nextSession) => {
+          setSession(nextSession);
+          setMessage("");
+          return true;
+        })
+        .catch((error: unknown) => {
+          setMessage(
+            error instanceof Error ? error.message : "Não foi possível entrar.",
+          );
+          setMessageType("error");
+          return false;
+        });
+    }
     setSession(createDemoSession(role, identifier));
     return true;
   }
@@ -60,12 +79,15 @@ export function useDemoSession() {
     setIdentifier(item.identifier);
     setPassword("");
     setMessage(
-      "Dados de demonstração preenchidos. Informe uma senha para continuar.",
+      isApiMode()
+        ? "Conta de teste preenchida. Informe a senha cadastrada no servidor."
+        : "Dados de demonstração preenchidos. Informe uma senha para continuar.",
     );
     setMessageType("success");
   }
 
   function logout() {
+    sessionStorage.removeItem("unicheck_token");
     setSession(null);
     setPassword("");
     setMessage("Sessão encerrada.");

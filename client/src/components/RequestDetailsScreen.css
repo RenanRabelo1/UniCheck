@@ -719,3 +719,12 @@
     height: 35px;
   }
 }
+
+.request-details-status-reservado {
+  color: #166534;
+  background: #dcfce7;
+}
+.request-details-status-atrasado {
+  color: #991b1b;
+  background: #fee2e2;
+}
