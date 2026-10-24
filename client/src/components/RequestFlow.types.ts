@@ -19,7 +19,13 @@ export type RequestConfirmationData = {
 };
 
 export type RequestItemStatus =
-  "PENDENTE" | "APROVADO" | "RECUSADO" | "RETIRADO" | "DEVOLVIDO";
+  | "PENDENTE"
+  | "APROVADO"
+  | "RECUSADO"
+  | "RETIRADO"
+  | "DEVOLVIDO"
+  | "RESERVADO"
+  | "ATRASADO";
 
 export type RequestItem = {
   id: string;

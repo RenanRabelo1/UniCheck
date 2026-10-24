@@ -16,6 +16,8 @@ type RequestDetailsScreenProps = {
 
 const statusLabels: Record<RequestItemStatus, string> = {
   PENDENTE: "Pendente",
+  RESERVADO: "Reservado",
+  ATRASADO: "Em atraso",
   APROVADO: "Aprovado",
   RECUSADO: "Recusado",
   RETIRADO: "Retirado",
@@ -37,7 +39,7 @@ export function RequestDetailsScreen({
   onBack,
 }: RequestDetailsScreenProps) {
   const activeCustodyItems = request.items.filter(
-    (item) => item.status === "RETIRADO",
+    (item) => item.status === "RETIRADO" || item.status === "ATRASADO",
   );
 
   return (
@@ -198,19 +200,22 @@ export function RequestDetailsScreen({
                       </span>
                     </div>
 
-                    {item.status === "APROVADO" && (
+                    {(item.status === "APROVADO" ||
+                      item.status === "RESERVADO") && (
                       <p className="request-details-item-notice approved">
                         Disponível para retirada no guichê da Secretaria J-02.
                       </p>
                     )}
 
-                    {item.status === "RETIRADO" && item.return && (
-                      <p className="request-details-item-notice custody">
-                        <strong>Custódia ativa.</strong> Este item permanece sob
-                        sua responsabilidade. Devolução prevista até{" "}
-                        {item.return.dueDate}.
-                      </p>
-                    )}
+                    {(item.status === "RETIRADO" ||
+                      item.status === "ATRASADO") &&
+                      item.return && (
+                        <p className="request-details-item-notice custody">
+                          <strong>Custódia ativa.</strong> Este item permanece
+                          sob sua responsabilidade. Devolução prevista até{" "}
+                          {item.return.dueDate}.
+                        </p>
+                      )}
 
                     {item.status === "RECUSADO" && item.rejectionReason && (
                       <p className="request-details-item-notice rejected">
@@ -254,7 +259,12 @@ export function RequestDetailsScreen({
 
               <div className="request-details-movements">
                 {request.items
-                  .filter((item) => item.pickup || item.status === "APROVADO")
+                  .filter(
+                    (item) =>
+                      item.pickup ||
+                      item.status === "APROVADO" ||
+                      item.status === "RESERVADO",
+                  )
                   .map((item) => (
                     <article key={item.id}>
                       <div>
@@ -308,7 +318,7 @@ export function RequestDetailsScreen({
                 </span>
                 <div>
                   <h2 id="request-history-title">Histórico do pedido</h2>
-                  <p>Linha do tempo auditada</p>
+                  <p>Registros disponíveis do pedido</p>
                 </div>
               </div>
 
@@ -330,7 +340,7 @@ export function RequestDetailsScreen({
               <span aria-hidden="true">?</span>
               <div>
                 <strong>Secretaria Bloco J-02</strong>
-                <small>Atendimento: 07h às 21h30 · Ramal 3477-3120</small>
+                <small>Atendimento: 07h30 às 21h00 · Ramal 3477-3120</small>
               </div>
             </section>
           </aside>

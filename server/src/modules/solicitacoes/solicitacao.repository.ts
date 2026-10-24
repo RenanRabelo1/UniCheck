@@ -1,45 +1,78 @@
-import { readDatabase, updateDatabase } from '../../database/jsonDatabase.js'
-import type { ItemSolicitacao, Solicitacao } from '../../database/types.js'
+import { readDatabase, updateDatabase } from "../../database/jsonDatabase.js";
+import type { ItemSolicitacao, Solicitacao } from "../../database/types.js";
 
 export type ItemDoUsuario = ItemSolicitacao & {
-  solicitacaoId: string
-  solicitadoEm: string
-}
+  solicitacaoId: string;
+  solicitadoEm: string;
+};
 
 export const solicitacaoRepository = {
   async listAll(): Promise<Solicitacao[]> {
-    const { solicitacoes } = await readDatabase()
-    return solicitacoes
+    const { solicitacoes } = await readDatabase();
+    return solicitacoes;
   },
 
   /** Solicitações do usuário, da mais recente para a mais antiga. */
   async listByUsuario(usuarioId: string): Promise<Solicitacao[]> {
-    const { solicitacoes } = await readDatabase()
+    const { solicitacoes } = await readDatabase();
     return solicitacoes
       .filter((solicitacao) => solicitacao.usuarioId === usuarioId)
-      .sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
+      .sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
+  },
+
+  /** Um snapshot consistente, limitado ao dono da solicitação. */
+  async detailsByUsuario(id: string, usuarioId: string) {
+    const db = await readDatabase();
+    const solicitacao = db.solicitacoes.find(
+      (s) => s.id === id && s.usuarioId === usuarioId,
+    );
+    if (!solicitacao) return undefined;
+    return {
+      solicitacao,
+      salas: db.salas,
+      movements: db.movimentacoes
+        .filter((m) => m.solicitacaoId === id)
+        .map((m) => ({
+          id: m.id,
+          itemId: m.itemId,
+          itemName: m.itemNome,
+          type: m.tipo,
+          registeredAt: m.registradoEm,
+          responsible: m.responsavel,
+          attendant:
+            db.usuarios.find((u) => u.id === m.registradoPorId)?.nome ??
+            "Não informado",
+          notes: m.observacao ?? null,
+        })),
+    };
   },
 
   async findById(id: string): Promise<Solicitacao | undefined> {
-    const { solicitacoes } = await readDatabase()
-    return solicitacoes.find((solicitacao) => solicitacao.id === id)
+    const { solicitacoes } = await readDatabase();
+    return solicitacoes.find((solicitacao) => solicitacao.id === id);
   },
 
-  async findByIdAndUsuario(id: string, usuarioId: string): Promise<Solicitacao | undefined> {
-    const { solicitacoes } = await readDatabase()
-    return solicitacoes.find((solicitacao) => solicitacao.id === id && solicitacao.usuarioId === usuarioId)
+  async findByIdAndUsuario(
+    id: string,
+    usuarioId: string,
+  ): Promise<Solicitacao | undefined> {
+    const { solicitacoes } = await readDatabase();
+    return solicitacoes.find(
+      (solicitacao) =>
+        solicitacao.id === id && solicitacao.usuarioId === usuarioId,
+    );
   },
 
   /** Todos os itens de todas as solicitações do usuário, já "achatados". */
   async listItensByUsuario(usuarioId: string): Promise<ItemDoUsuario[]> {
-    const solicitacoes = await this.listByUsuario(usuarioId)
+    const solicitacoes = await this.listByUsuario(usuarioId);
     return solicitacoes.flatMap((solicitacao) =>
       solicitacao.itens.map((item) => ({
         ...item,
         solicitacaoId: solicitacao.id,
         solicitadoEm: solicitacao.criadoEm,
       })),
-    )
+    );
   },
 
   /**
@@ -47,7 +80,7 @@ export const solicitacaoRepository = {
    * Usada pela análise do coordenador, que confere e altera o item no mesmo passo.
    */
   transaction<T>(change: (solicitacoes: Solicitacao[]) => T): Promise<T> {
-    return updateDatabase((database) => change(database.solicitacoes))
+    return updateDatabase((database) => change(database.solicitacoes));
   },
 
   /**
@@ -56,11 +89,13 @@ export const solicitacaoRepository = {
    * um erro (ex.: item indisponível), nada é gravado. Assim a checagem de
    * disponibilidade e a gravação acontecem juntas, sem brecha entre uma e outra.
    */
-  create(build: (existentes: Solicitacao[]) => Solicitacao): Promise<Solicitacao> {
+  create(
+    build: (existentes: Solicitacao[]) => Solicitacao,
+  ): Promise<Solicitacao> {
     return updateDatabase((database) => {
-      const nova = build(database.solicitacoes)
-      database.solicitacoes.push(nova)
-      return nova
-    })
+      const nova = build(database.solicitacoes);
+      database.solicitacoes.push(nova);
+      return nova;
+    });
   },
-}
+};
