@@ -1,4 +1,6 @@
 import { useState } from "react";
+import type { DashboardSession } from "../modules/dashboard/dashboard.types";
+import { AppTopNav, type AppTopNavExtras } from "./AppTopNav";
 import type { RequestConfirmationData } from "./RequestFlow.types";
 import "./RequestConfirmationScreen.css";
 
@@ -8,11 +10,16 @@ export type {
 } from "./RequestFlow.types";
 
 type RequestConfirmationScreenProps = {
+  session: DashboardSession;
   request: RequestConfirmationData;
   protocol?: string;
+  /** Botões extras da barra do topo (Sair, Materiais). */
+  navExtras?: AppTopNavExtras;
   onBack: () => void;
+  onMyRequests: () => void;
   onEdit: () => void;
-  onConfirm: () => void | Promise<void>;
+  /** Pode devolver o protocolo gerado pelo servidor. */
+  onConfirm: () => void | string | Promise<void | string>;
   onSuccess?: () => void;
 };
 
@@ -22,17 +29,22 @@ function formatDate(value: string) {
 }
 
 export function RequestConfirmationScreen({
+  session,
   request,
-  protocol = "#REQ-2026-0842",
+  protocol: initialProtocol = "#REQ-2026-0842",
   onBack,
+  onMyRequests,
   onEdit,
   onConfirm,
   onSuccess,
+  navExtras,
 }: RequestConfirmationScreenProps) {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [createdProtocol, setCreatedProtocol] = useState<string | null>(null);
+  const protocol = createdProtocol ?? initialProtocol;
 
   async function confirmRequest() {
     if (!acceptedTerms) {
@@ -46,10 +58,15 @@ export function RequestConfirmationScreen({
     setIsSubmitting(true);
 
     try {
-      await onConfirm();
+      const result = await onConfirm();
+      if (typeof result === "string") setCreatedProtocol(result);
       setIsSuccessOpen(true);
-    } catch {
-      setError("Não foi possível enviar a solicitação. Tente novamente.");
+    } catch (reason) {
+      setError(
+        reason instanceof Error && reason.message
+          ? reason.message
+          : "Não foi possível enviar a solicitação. Tente novamente.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -62,25 +79,14 @@ export function RequestConfirmationScreen({
 
   return (
     <main className="confirmation-page">
-      <header className="confirmation-header">
-        <div className="confirmation-header-content">
-          <div className="dashboard-brand">
-            <img src="/brand/unifor.svg" alt="Unifor" />
-            <span />
-            <div>
-              <strong>Sistema CCT</strong>
-              <small>Controle de Empréstimos · Bloco J-02</small>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="confirmation-home-button"
-            onClick={onBack}
-          >
-            ← Voltar para início
-          </button>
-        </div>
-      </header>
+      <AppTopNav
+        user={session}
+        active="new"
+        onHome={onBack}
+        onNewRequest={onEdit}
+        onMyRequests={onMyRequests}
+        {...navExtras}
+      />
 
       <section className="confirmation-content">
         <div className="confirmation-context">

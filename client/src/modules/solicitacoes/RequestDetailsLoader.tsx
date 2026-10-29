@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import type { AppTopNavExtras } from "../../components/AppTopNav";
 import { RequestDetailsScreen } from "../../components/RequestDetailsScreen";
 import { mapRequestDetails } from "../../app/navigation";
 import { getRequestDetails } from "../../services/requests";
@@ -10,10 +11,16 @@ export function RequestDetailsLoader({
   selectedRequest,
   session,
   onBack,
+  onHome,
+  onNewRequest,
+  navExtras,
 }: {
   selectedRequest: MyRequest | null;
   session: DashboardSession;
   onBack: () => void;
+  onHome: () => void;
+  onNewRequest: () => void;
+  navExtras?: AppTopNavExtras;
 }) {
   const load = useCallback(
     async (signal: AbortSignal) => {
@@ -40,5 +47,17 @@ export function RequestDetailsLoader({
         )}
       </main>
     );
-  return <RequestDetailsScreen request={data} onBack={onBack} />;
+  return (
+    <RequestDetailsScreen
+      request={data}
+      onBack={onBack}
+      nav={{
+        user: session,
+        onHome,
+        onNewRequest,
+        onMyRequests: onBack,
+        ...navExtras,
+      }}
+    />
+  );
 }

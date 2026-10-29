@@ -20,12 +20,9 @@ export function useDemoSession() {
   const [session, setSession] = useState<DemoSession | null>(null);
 
   const isStudent = role === "student";
-  const identifierLabel = isStudent ? "E-mail institucional" : "Matrícula";
-  const identifierPlaceholder = isStudent
-    ? "seu.email@unifor.br"
-    : role === "professor"
-      ? "Ex.: 2048819"
-      : "Ex.: 18024900";
+  // Todos entram com o e-mail institucional; a matrícula também é aceita.
+  const identifierLabel = "E-mail institucional ou matrícula";
+  const identifierPlaceholder = "seu.email@unifor.br";
 
   function changeRole(nextRole: DemoRole) {
     setRole(nextRole);
@@ -86,6 +83,14 @@ export function useDemoSession() {
     setMessageType("success");
   }
 
+  /** Usado pelo cadastro: a conta nova já entra no sistema sem passar pelo login. */
+  function startSession(nextSession: DemoSession) {
+    setSession(nextSession);
+    setIdentifier("");
+    setPassword("");
+    setMessage("");
+  }
+
   function logout() {
     sessionStorage.removeItem("unicheck_token");
     setSession(null);
@@ -110,6 +115,7 @@ export function useDemoSession() {
     setPassword,
     togglePasswordVisibility: () => setShowPassword((current) => !current),
     login,
+    startSession,
     fillQuickAccess,
     logout,
   };

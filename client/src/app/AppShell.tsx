@@ -1,4 +1,5 @@
 import { isApiMode } from "../services/api";
+import { createRequest } from "../services/requests";
 import { useState, type FormEvent } from "react";
 import { AdminDashboard } from "../components/AdminDashboard";
 import { MyRequestsScreen } from "../components/MyRequestsScreen";
@@ -10,6 +11,7 @@ import { RequestDetailsLoader } from "../modules/solicitacoes/RequestDetailsLoad
 import { StudentDashboard } from "../components/StudentDashboard";
 import { UserDashboard } from "../components/UserDashboard";
 import { DemoLogin } from "../modules/auth/DemoLogin";
+import { RegisterScreen } from "../modules/auth/RegisterScreen";
 import { useDemoSession } from "../modules/auth/useDemoSession";
 import { AuthorizationsProjects } from "../modules/admin/authorizations-projects";
 import { CheckoutOperations } from "../modules/admin/checkout-operations";
@@ -26,6 +28,7 @@ import { type AdminView, type AppView } from "./navigation";
 
 export function AppShell() {
   const demoSession = useDemoSession();
+  const [showRegister, setShowRegister] = useState(false);
   const [activeView, setActiveView] = useState<AppView>("dashboard");
   const [requestForReview, setRequestForReview] =
     useState<RequestConfirmationData | null>(null);
@@ -52,6 +55,19 @@ export function AppShell() {
     demoSession.logout();
   }
 
+  if (!demoSession.session && showRegister) {
+    return (
+      <RegisterScreen
+        onBackToLogin={() => setShowRegister(false)}
+        onRegistered={(newSession) => {
+          demoSession.startSession(newSession);
+          setActiveView("dashboard");
+          setShowRegister(false);
+        }}
+      />
+    );
+  }
+
   if (!demoSession.session) {
     return (
       <DemoLogin
@@ -61,7 +77,6 @@ export function AppShell() {
         showPassword={demoSession.showPassword}
         message={demoSession.message}
         messageType={demoSession.messageType}
-        isStudent={demoSession.isStudent}
         identifierLabel={demoSession.identifierLabel}
         identifierPlaceholder={demoSession.identifierPlaceholder}
         onRoleChange={demoSession.changeRole}
@@ -70,6 +85,7 @@ export function AppShell() {
         onPasswordVisibilityToggle={demoSession.togglePasswordVisibility}
         onSubmit={submitLogin}
         onQuickAccess={demoSession.fillQuickAccess}
+        onCreateAccount={() => setShowRegister(true)}
       />
     );
   }
@@ -180,6 +196,14 @@ export function AppShell() {
   }
 
   const session = demoSession.session.dashboard;
+  // Mesmos botões extras da barra do topo em todas as telas.
+  const navExtras = {
+    onLogout: logout,
+    onMaterials:
+      demoSession.session.role === "professor"
+        ? () => setActiveView("professor-materials")
+        : undefined,
+  };
 
   if (
     activeView === "professor-materials" &&
@@ -201,7 +225,13 @@ export function AppShell() {
     return (
       <NewRequestScreen
         session={session}
-        onBack={() => setActiveView("dashboard")}
+        navExtras={navExtras}
+        initialDraft={requestForReview?.draft}
+        onBack={() => {
+          setRequestForReview(null);
+          setActiveView("dashboard");
+        }}
+        onMyRequests={() => setActiveView("my-requests")}
         onReview={(request) => {
           setRequestForReview(request);
           setActiveView("confirmation");
@@ -213,16 +243,22 @@ export function AppShell() {
   if (activeView === "confirmation" && requestForReview) {
     return (
       <RequestConfirmationScreen
+        session={session}
+        navExtras={navExtras}
         request={requestForReview}
         onBack={() => setActiveView("dashboard")}
+        onMyRequests={() => setActiveView("my-requests")}
         onEdit={() => setActiveView("new-request")}
         onConfirm={async () => {
-          if (isApiMode())
-            throw new Error(
-              "O envio de novos pedidos ainda não está disponível nesta versão. Nenhuma solicitação foi gravada.",
-            );
+          // No modo mock não há servidor: só simula o envio.
+          if (!isApiMode() || !requestForReview.draft) return;
+          const created = await createRequest(requestForReview.draft);
+          return created.protocol;
         }}
-        onSuccess={() => setActiveView("my-requests")}
+        onSuccess={() => {
+          setRequestForReview(null);
+          setActiveView("my-requests");
+        }}
       />
     );
   }
@@ -231,6 +267,7 @@ export function AppShell() {
     return (
       <MyRequestsScreen
         session={session}
+        navExtras={navExtras}
         onBack={() => setActiveView("dashboard")}
         onNewRequest={() => setActiveView("new-request")}
         onOpenRequest={(request) => {
@@ -245,8 +282,11 @@ export function AppShell() {
     return (
       <RequestDetailsLoader
         session={session}
+        navExtras={navExtras}
         selectedRequest={selectedRequest}
         onBack={() => setActiveView("my-requests")}
+        onHome={() => setActiveView("dashboard")}
+        onNewRequest={() => setActiveView("new-request")}
       />
     );
   }

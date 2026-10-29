@@ -11,7 +11,7 @@ describe("fluxos principais do frontend", () => {
   it("navega do painel do professor para uma nova solicitação e encerra a sessão", async () => {
     render(<App />);
 
-    fireEvent.change(screen.getByLabelText("Matrícula"), {
+    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
       target: { value: "2048819" },
     });
     fireEvent.change(screen.getByLabelText("Senha"), {
@@ -48,7 +48,7 @@ describe("fluxos principais do frontend", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("tab", { name: "Coordenador CCT" }));
-    fireEvent.change(screen.getByLabelText("Matrícula"), {
+    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
       target: { value: "18024900" },
     });
     fireEvent.change(screen.getByLabelText(/Senha/), {
@@ -65,7 +65,7 @@ describe("fluxos principais do frontend", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("tab", { name: "Aluno" }));
-    fireEvent.change(screen.getByLabelText("E-mail institucional"), {
+    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
       target: { value: "aluno.autorizado@unifor.br" },
     });
     fireEvent.change(screen.getByLabelText("Senha"), {
@@ -81,7 +81,7 @@ describe("fluxos principais do frontend", () => {
   it("permite ao professor consultar o catálogo e trazer uma seleção ao formulário", async () => {
     render(<App />);
 
-    fireEvent.change(screen.getByLabelText("Matrícula"), {
+    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
       target: { value: "2048819" },
     });
     fireEvent.change(screen.getByLabelText("Senha"), {
@@ -115,7 +115,7 @@ describe("fluxos principais do frontend", () => {
   it("abre o catálogo pelo item Materiais do painel do professor", async () => {
     render(<App />);
 
-    fireEvent.change(screen.getByLabelText("Matrícula"), {
+    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
       target: { value: "2048819" },
     });
     fireEvent.change(screen.getByLabelText("Senha"), {
@@ -141,6 +141,13 @@ describe("fluxos principais do frontend", () => {
 
     render(
       <RequestConfirmationScreen
+        session={{
+          name: "Prof. Teste",
+          registration: "123",
+          role: "professor",
+          roleLabel: "Professor",
+        }}
+        onMyRequests={vi.fn()}
         request={{
           usageDate: "2026-09-24",
           location: "Sala J-02",

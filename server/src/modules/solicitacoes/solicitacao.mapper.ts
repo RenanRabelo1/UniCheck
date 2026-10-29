@@ -9,7 +9,7 @@ export function toSolicitacaoView(solicitacao: Solicitacao, salas: Sala[]) {
 
   return {
     id: solicitacao.id,
-    protocol: solicitacao.id,
+    protocol: solicitacao.protocolo,
     semester: `${solicitacao.dataUtilizacao.slice(0, 4)}.${Number(solicitacao.dataUtilizacao.slice(5, 7)) <= 6 ? 1 : 2}`,
     createdAt: solicitacao.criadoEm,
     date: solicitacao.dataUtilizacao,

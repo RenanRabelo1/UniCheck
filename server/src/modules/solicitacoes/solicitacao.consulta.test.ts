@@ -7,13 +7,12 @@ beforeEach(async () => {
 });
 afterEach(() => {
   vi.useRealTimers();
-  delete process.env.DATA_FILE;
 });
 describe("consulta das duas telas", () => {
   it("lista exclusivamente os pedidos do usuário e fornece semestre e protocolo", async () => {
     for (const [token, ids] of [
-      [context.professor, ["sol-001", "sol-002", "sol-003", "sol-004"]],
-      [context.aluno, ["sol-005", "sol-006", "sol-007"]],
+      [context.professor, ["1001", "1002", "1003", "1004"]],
+      [context.aluno, ["1005", "1006", "1007"]],
     ] as const) {
       const res = await request(context.app)
         .get("/solicitacoes")
@@ -24,20 +23,20 @@ describe("consulta das duas telas", () => {
       ]);
       expect(res.body[0]).toMatchObject({
         semester: "2026.2",
-        protocol: res.body[0].id,
+        protocol: expect.stringMatching(/^CCT-2026-\d{5}$/),
       });
       expect(res.body[0].items[0].updatedAt).toBeTruthy();
     }
   });
   it("detalhes contêm movimentações reais do pedido, sem dados secretos", async () => {
     const res = await request(context.app)
-      .get("/solicitacoes/sol-004")
+      .get("/solicitacoes/1004")
       .set("Authorization", context.professor);
     expect(res.status).toBe(200);
     expect(res.body.requester.name).toBe("Prof. Ricardo Mendes");
     expect(res.body.movements.map((m: { id: string }) => m.id)).toEqual([
-      "mov-001",
-      "mov-002",
+      "1001",
+      "1002",
     ]);
     expect(res.body.movements[1]).toMatchObject({
       registeredAt: "2026-10-02T17:45:00-03:00",
@@ -47,14 +46,14 @@ describe("consulta das duas telas", () => {
     expect(JSON.stringify(res.body)).not.toMatch(/senhaHash|jwtSecret/);
   });
   it("não revela pedido alheio nem inexistente e exige login nas duas rotas", async () => {
-    for (const id of ["sol-004", "nao-existe"]) {
+    for (const id of ["1004", "nao-existe"]) {
       const res = await request(context.app)
         .get(`/solicitacoes/${id}`)
         .set("Authorization", context.aluno);
       expect(res.status).toBe(404);
       expect(res.body.message).toBe("Solicitação não encontrada.");
     }
-    for (const path of ["/solicitacoes", "/solicitacoes/sol-004"])
+    for (const path of ["/solicitacoes", "/solicitacoes/1004"])
       expect((await request(context.app).get(path)).status).toBe(401);
   });
 });

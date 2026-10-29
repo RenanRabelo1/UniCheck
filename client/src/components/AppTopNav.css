@@ -1,0 +1,134 @@
+/* Barra do topo compartilhada: Início, Nova solicitação e Minhas solicitações. */
+
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  border-bottom: 1px solid #e1e7ef;
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 2px 14px rgb(17 62 130 / 5%);
+  backdrop-filter: blur(12px);
+}
+
+.app-nav__content {
+  width: min(1240px, calc(100% - 40px));
+  min-height: 72px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.app-nav-brand {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.app-nav-brand img {
+  width: 70px;
+  height: 28px;
+  object-fit: contain;
+}
+.app-nav-brand > span:first-of-type {
+  width: 1px;
+  height: 29px;
+  background: #dce3ed;
+}
+.app-nav-brand strong,
+.app-nav-brand small,
+.app-nav-profile strong,
+.app-nav-profile small {
+  display: block;
+}
+.app-nav-brand strong {
+  font-size: 14px;
+}
+.app-nav-brand small,
+.app-nav-profile small {
+  margin-top: 2px;
+  color: #667085;
+  font-size: 10px;
+}
+
+.app-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.app-nav-links button {
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 750;
+}
+.app-nav-links button:hover,
+.app-nav-links button.active {
+  background: #e4f2fe;
+  color: #004af7;
+}
+
+.app-nav-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.app-nav-profile__copy {
+  text-align: right;
+}
+.app-nav-profile__copy strong {
+  font-size: 12px;
+}
+.app-nav-profile__avatar {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #004af7;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.app-nav-logout {
+  margin-left: 4px;
+  padding: 8px 12px;
+  border: 1px solid #dce3ed;
+  border-radius: 8px;
+  background: #fff;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 750;
+}
+.app-nav-logout:hover {
+  border-color: #004af7;
+  color: #004af7;
+}
+
+@media (max-width: 900px) {
+  .app-nav-links {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .app-nav__content {
+    width: min(100% - 28px, 620px);
+    min-height: 62px;
+  }
+  .app-nav-brand > span:first-of-type,
+  .app-nav-brand small,
+  .app-nav-profile__copy {
+    display: none;
+  }
+}

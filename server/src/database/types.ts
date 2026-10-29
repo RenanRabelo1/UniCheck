@@ -79,6 +79,8 @@ export interface ItemSolicitacao {
 
 export interface Solicitacao {
   id: string
+  /** Número exibido ao usuário (ex.: CCT-2026-00012). */
+  protocolo: string
   usuarioId: string
   criadoEm: string
   salaId: string
@@ -110,6 +112,9 @@ export interface Movimentacao {
 }
 
 /** Alerta gerado quando um item não é devolvido até 22:40. */
+/** Movimentação junto com o nome de quem registrou (vem do JOIN com usuário). */
+export type MovimentacaoComAutor = Movimentacao & { registradoPorNome: string | null }
+
 export interface Alerta {
   id: string
   solicitacaoId: string
@@ -119,14 +124,4 @@ export interface Alerta {
   criadoEm: string
   /** Preenchido quando o item é devolvido. */
   resolvidoEm?: string
-}
-
-export interface Database {
-  usuarios: Usuario[]
-  salas: Sala[]
-  materiais: Material[]
-  chaves: Chave[]
-  solicitacoes: Solicitacao[]
-  movimentacoes: Movimentacao[]
-  alertas: Alerta[]
 }

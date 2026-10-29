@@ -1,113 +1,172 @@
-import { FormEvent, useMemo, useState } from "react";
-import { DashboardSession } from "../modules/dashboard/dashboard.types";
-import { ProfessorMaterialsCatalog } from "../modules/professor-materials/ProfessorMaterialsCatalog";
-import type { RequestConfirmationData } from "./RequestConfirmationScreen";
+import { useState, type FormEvent } from "react";
+import type { DashboardSession } from "../modules/dashboard/dashboard.types";
+import { AppTopNav, type AppTopNavExtras } from "./AppTopNav";
+import type {
+  RequestConfirmationData,
+  RequestDraft,
+} from "./RequestFlow.types";
+import {
+  ItemPicker,
+  itemKey,
+  unavailableReason,
+} from "../modules/solicitacoes/ItemPicker";
+import { useRequestOptions } from "../modules/solicitacoes/useRequestOptions";
+import type { CatalogItem } from "../modules/solicitacoes/types";
 
 type NewRequestScreenProps = {
   session: DashboardSession;
+  /** Preenche o formulário de novo ao voltar da tela de confirmação. */
+  initialDraft?: RequestDraft;
+  /** Botões extras da barra do topo (Sair, Materiais). */
+  navExtras?: AppTopNavExtras;
   onBack: () => void;
+  onMyRequests: () => void;
   onReview: (request: RequestConfirmationData) => void;
 };
 
-const rooms = [
-  { value: "j-201", label: "J-201 · Laboratório de Redes" },
-  { value: "j-204", label: "J-204 · Laboratório de Desenvolvimento" },
-  { value: "j-311", label: "J-311 · Sala de Projetos" },
-];
+const MIN_PICKUP = "07:30";
+const MAX_PICKUP = "21:00";
+const MAX_RETURN = "22:40";
 
-const materials = [
-  { value: "projector", label: "Projetor multimídia" },
-  { value: "notebook", label: "Notebook" },
-  { value: "extension", label: "Extensão elétrica" },
-  { value: "webcam", label: "Webcam" },
-];
-
-const keysByRoom: Record<string, { value: string; label: string }[]> = {
-  "j-201": [{ value: "j201-primary", label: "Chave J-201 · Primária" }],
-  "j-204": [
-    { value: "j204-primary", label: "Chave J-204 · Primária" },
-    { value: "j204-secondary", label: "Chave J-204 · Secundária" },
-  ],
-  "j-311": [{ value: "j311-primary", label: "Chave J-311 · Primária" }],
-};
+/** Transforma o rascunho salvo em { "material:3": 2, "key:1": 1 }. */
+function selectionFromDraft(draft?: RequestDraft) {
+  const selected: Record<string, number> = {};
+  for (const item of draft?.items ?? []) {
+    selected[itemKey(item)] = item.quantity;
+  }
+  return selected;
+}
 
 export function NewRequestScreen({
   session,
+  initialDraft,
   onBack,
+  onMyRequests,
   onReview,
+  navExtras,
 }: NewRequestScreenProps) {
   const isStudent = session.role === "student";
-  const [date, setDate] = useState("");
-  const [room, setRoom] = useState("");
-  const [pickupTime, setPickupTime] = useState("");
-  const [returnTime, setReturnTime] = useState("");
-  const [item, setItem] = useState("");
-  const [quantity, setQuantity] = useState(1);
-  const [notes, setNotes] = useState("");
-  const [error, setError] = useState("");
-  const [catalogOpen, setCatalogOpen] = useState(false);
-
-  const itemOptions = useMemo(
-    () => (isStudent ? (keysByRoom[room] ?? []) : materials),
-    [isStudent, room],
+  const [date, setDate] = useState(initialDraft?.date ?? "");
+  const [room, setRoom] = useState(initialDraft?.roomId ?? "");
+  const [pickupTime, setPickupTime] = useState(initialDraft?.pickupTime ?? "");
+  const [returnTime, setReturnTime] = useState(initialDraft?.returnTime ?? "");
+  const [notes, setNotes] = useState(initialDraft?.notes ?? "");
+  const [selected, setSelected] = useState<Record<string, number>>(() =>
+    selectionFromDraft(initialDraft),
   );
+  const [error, setError] = useState("");
+
+  const options = useRequestOptions({ date, pickupTime, returnTime });
+  const catalog = options.data?.items ?? [];
+  const rooms = options.data?.rooms ?? [];
+  const hasWindow = Boolean(
+    date && pickupTime && returnTime && returnTime > pickupTime,
+  );
+
+  function toggleItem(item: CatalogItem) {
+    const key = itemKey(item);
+    setError("");
+    setSelected((current) => {
+      const next = { ...current };
+      if (key in next) delete next[key];
+      else next[key] = 1;
+      return next;
+    });
+  }
+
+  function changeQuantity(item: CatalogItem, quantity: number) {
+    setSelected((current) => ({ ...current, [itemKey(item)]: quantity }));
+  }
+
+  function changeRoom(roomId: string) {
+    setRoom(roomId);
+    // Uma chave só vale para a sala dela: ao trocar de sala, soltamos as chaves das outras.
+    setSelected((current) => {
+      const next: Record<string, number> = {};
+      for (const [key, quantity] of Object.entries(current)) {
+        const item = catalog.find((candidate) => itemKey(candidate) === key);
+        if (item?.type === "key" && roomId && item.roomId !== roomId) continue;
+        next[key] = quantity;
+      }
+      return next;
+    });
+  }
 
   function submitRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!date || !room || !pickupTime || !returnTime || !item) {
-      setError("Preencha todos os campos obrigatórios antes de continuar.");
+    if (!date || !room || !pickupTime || !returnTime) {
+      setError("Preencha data, sala e horários antes de continuar.");
       return;
     }
-
     if (returnTime <= pickupTime) {
       setError(
         "O horário previsto de devolução deve ser posterior ao horário de retirada.",
       );
       return;
     }
+    if (pickupTime < MIN_PICKUP || pickupTime > MAX_PICKUP) {
+      setError(`A retirada deve ser entre ${MIN_PICKUP} e ${MAX_PICKUP}.`);
+      return;
+    }
+    if (returnTime > MAX_RETURN) {
+      setError(`A devolução deve ocorrer até ${MAX_RETURN}.`);
+      return;
+    }
+
+    const chosen = catalog.filter((item) => itemKey(item) in selected);
+    if (chosen.length === 0) {
+      setError("Escolha pelo menos um item na lista para solicitar.");
+      return;
+    }
+    const blocked = chosen.find((item) =>
+      unavailableReason(item, room, hasWindow),
+    );
+    if (blocked) {
+      setError(
+        `"${blocked.name}" não pode ser solicitado: ${unavailableReason(blocked, room, hasWindow)}. Remova-o para continuar.`,
+      );
+      return;
+    }
 
     const selectedRoom = rooms.find((option) => option.value === room);
-    const selectedItem = itemOptions.find((option) => option.value === item);
+    const draftItems = chosen.map((item) => ({
+      type: item.type,
+      id: item.id,
+      quantity: item.type === "key" ? 1 : selected[itemKey(item)],
+    }));
 
     setError("");
     onReview({
+      draft: { roomId: room, date, pickupTime, returnTime, notes, items: draftItems },
       usageDate: date,
       location: selectedRoom?.label ?? room,
       pickupTime,
       returnTime,
       notes,
-      items: [
-        {
-          id: item,
-          name: selectedItem?.label ?? item,
-          category: isStudent ? "Chave de laboratório" : "Material acadêmico",
-          quantity: isStudent ? 1 : quantity,
-          unit: isStudent ? "chave" : "un.",
-          project: isStudent ? "Laboratório de Redes" : undefined,
-          withdrawalLocation: "Secretaria CCT · Bloco J-02",
-        },
-      ],
+      items: chosen.map((item, index) => ({
+        id: itemKey(item),
+        name: item.name,
+        category:
+          item.type === "key" ? "Chave de laboratório" : "Material acadêmico",
+        quantity: draftItems[index].quantity,
+        unit: item.type === "key" ? "chave" : "un.",
+        description: item.detail ?? undefined,
+        withdrawalLocation: "Secretaria CCT · Bloco J-02",
+      })),
     });
   }
 
   return (
     <main className="request-page">
-      <header className="request-header">
-        <div className="request-header-content">
-          <div className="dashboard-brand">
-            <img src="/brand/unifor.svg" alt="Unifor" />
-            <span />
-            <div>
-              <strong>Sistema CCT</strong>
-              <small>Controle de Empréstimos · Bloco J-02</small>
-            </div>
-          </div>
-          <button type="button" className="back-to-dashboard" onClick={onBack}>
-            ← Voltar para início
-          </button>
-        </div>
-      </header>
+      <AppTopNav
+        user={session}
+        active="new"
+        onHome={onBack}
+        onNewRequest={() => undefined}
+        onMyRequests={onMyRequests}
+        {...navExtras}
+      />
 
       <section className="request-content">
         <div className="request-context">
@@ -123,8 +182,8 @@ export function NewRequestScreen({
           <h1>Nova solicitação</h1>
           <p>
             {isStudent
-              ? "Informe o período, a sala e a chave de laboratório que deseja requisitar para seu projeto."
-              : "Informe o período e a sala de utilização, além dos materiais que deseja requisitar para sua atividade acadêmica."}
+              ? "Informe o período e a sala, e marque na lista as chaves de laboratório que deseja requisitar."
+              : "Informe o período e a sala, e marque na lista os materiais e chaves que deseja requisitar."}
           </p>
           <div className="request-info">
             <b>ⓘ</b>
@@ -144,7 +203,7 @@ export function NewRequestScreen({
           </span>
           <i />
           <span>
-            <b>2</b> {isStudent ? "Chave solicitada" : "Materiais solicitados"}
+            <b>2</b> Itens solicitados
           </span>
           <i />
           <span>
@@ -175,10 +234,7 @@ export function NewRequestScreen({
                 Sala / local *
                 <select
                   value={room}
-                  onChange={(event) => {
-                    setRoom(event.target.value);
-                    setItem("");
-                  }}
+                  onChange={(event) => changeRoom(event.target.value)}
                 >
                   <option value="">Selecione a sala</option>
                   {rooms.map((option) => (
@@ -218,102 +274,51 @@ export function NewRequestScreen({
 
           <section className="request-section">
             <header>
-              <span>{isStudent ? "🔑" : "▣"}</span>
+              <span>▣</span>
               <div>
-                <h2>
-                  2. {isStudent ? "Chave solicitada" : "Material solicitado"}
-                </h2>
+                <h2>2. Itens solicitados</h2>
                 <p>
                   {isStudent
                     ? "Alunos autorizados podem solicitar somente chaves de laboratórios."
-                    : "Professores podem solicitar materiais e equipamentos disponíveis."}
+                    : "Clique nos itens para marcá-los. Você pode escolher vários."}
                 </p>
               </div>
             </header>
 
-            {isStudent && (
+            {isStudent && options.data?.authorization && (
               <div className="authorization-notice">
                 <b>✓</b>
                 <div>
                   <strong>Autorização ativa</strong>
                   <span>
-                    Projeto: Laboratório de Redes · Professor responsável: Prof.
-                    Ricardo Mendes
+                    Projeto: {options.data.authorization.project}
+                    {options.data.authorization.responsibleProfessor &&
+                      ` · Professor responsável: ${options.data.authorization.responsibleProfessor}`}
                   </span>
                 </div>
               </div>
             )}
 
-            <div className="item-request-card">
-              <div className="item-card-title">
-                <span>{isStudent ? "🔑" : "▣"}</span>
-                <strong>
-                  {isStudent ? "Selecione a chave" : "Selecione o material"}
-                </strong>
-              </div>
-              <div
-                className={isStudent ? "item-fields student" : "item-fields"}
-              >
-                <label>
-                  {isStudent ? "Chave *" : "Material *"}
-                  <select
-                    value={item}
-                    onChange={(event) => setItem(event.target.value)}
-                    disabled={isStudent && !room}
-                  >
-                    <option value="">
-                      {isStudent && !room
-                        ? "Selecione a sala primeiro"
-                        : "Selecione uma opção"}
-                    </option>
-                    {itemOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                {!isStudent && (
-                  <label>
-                    Quantidade *
-                    <input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={quantity}
-                      onChange={(event) =>
-                        setQuantity(Number(event.target.value) || 1)
-                      }
-                    />
-                  </label>
-                )}
-              </div>
-              {!isStudent && (
-                <button
-                  type="button"
-                  className="open-materials-catalog"
-                  onClick={() => setCatalogOpen((open) => !open)}
-                  aria-expanded={catalogOpen}
-                >
-                  {catalogOpen
-                    ? "Ocultar catálogo de materiais"
-                    : "Consultar catálogo de materiais"}
+            {options.loading && <p role="status">Carregando itens…</p>}
+            {options.error && (
+              <p className="request-error" role="alert">
+                ⚠ {options.error}{" "}
+                <button type="button" onClick={options.reload}>
+                  Tentar de novo
                 </button>
-              )}
-            </div>
-          </section>
-
-          {!isStudent && catalogOpen && (
-            <section className="request-section professor-materials-panel" aria-label="Catálogo de materiais do professor">
-              <ProfessorMaterialsCatalog
-                onUseSelection={({ id, quantity: selectedQuantity }) => {
-                  setItem(id);
-                  setQuantity(selectedQuantity);
-                  setCatalogOpen(false);
-                }}
+              </p>
+            )}
+            {options.data && (
+              <ItemPicker
+                items={catalog}
+                selected={selected}
+                roomId={room}
+                hasWindow={hasWindow}
+                onToggle={toggleItem}
+                onQuantityChange={changeQuantity}
               />
-            </section>
-          )}
+            )}
+          </section>
 
           {error && (
             <p className="request-error" role="alert">

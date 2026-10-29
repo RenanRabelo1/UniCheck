@@ -1,10 +1,11 @@
+import { withTransaction } from '../../database/sql.js'
 import type { StatusItem, Usuario } from '../../database/types.js'
 import { HttpError } from '../../middlewares/httpError.js'
 import { chaveRepository } from '../chaves/chave.repository.js'
 import { materialRepository } from '../materiais/material.repository.js'
 import { toRequester } from '../usuarios/usuario.mapper.js'
 import { usuarioRepository } from '../usuarios/usuario.repository.js'
-import { quantidadeOcupada } from './solicitacao.disponibilidade.js'
+import { quantidadeOcupada, travarItens } from './solicitacao.disponibilidade.js'
 import { toSolicitacaoView } from './solicitacao.mapper.js'
 import { solicitacaoRepository } from './solicitacao.repository.js'
 import { ROTULO_STATUS } from './solicitacao.status.js'
@@ -22,7 +23,6 @@ export const solicitacaoAdminService = {
     return solicitacoes
       .filter((solicitacao) => !filtros.date || solicitacao.dataUtilizacao === filtros.date)
       .filter((solicitacao) => !filtros.status || solicitacao.itens.some((item) => item.status === filtros.status))
-      .sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
       .map((solicitacao) => ({
         ...toSolicitacaoView(solicitacao, salas),
         requester: toRequester(usuarios.find((usuario) => usuario.id === solicitacao.usuarioId)),
@@ -37,49 +37,53 @@ export const solicitacaoAdminService = {
     input: DecisionInput,
     now: Date = new Date(),
   ) {
-    const [materiais, chaves, salas] = await Promise.all([
-      materialRepository.listActive(),
-      chaveRepository.listActive(),
-      chaveRepository.listSalas(),
-    ])
-    // Quantas unidades existem de cada coisa: material = estoque; chave = 1.
-    const capacidade = new Map<string, number>([
-      ...materiais.map((material) => [material.id, material.quantidadeTotal] as const),
-      ...chaves.map((chave) => [chave.id, 1] as const),
-    ])
+    const solicitacao = await withTransaction(async (connection) => {
+      const existente = await solicitacaoRepository.findById(solicitacaoId, connection)
+      if (!existente) throw new HttpError(404, 'Solicitação não encontrada.')
+      if (!existente.itens.some((candidato) => candidato.id === itemId)) throw new HttpError(404, 'Item não encontrado.')
 
-    const solicitacao = await solicitacaoRepository.transaction((solicitacoes) => {
-      const alvo = solicitacoes.find((item) => item.id === solicitacaoId)
-      if (!alvo) throw new HttpError(404, 'Solicitação não encontrada.')
-      const item = alvo.itens.find((candidato) => candidato.id === itemId)
-      if (!item) throw new HttpError(404, 'Item não encontrado.')
+      // Trava o item e lê a situação de novo: uma decisão simultânea já pode ter acontecido.
+      const encontrado = await solicitacaoRepository.findItemForUpdate(solicitacaoId, itemId, connection)
+      const { solicitacao: cabecalho, item } = encontrado!
 
       if (item.status !== 'PENDENTE') {
         throw new HttpError(409, `Este item já foi analisado (situação atual: ${ROTULO_STATUS[item.status]}).`)
       }
 
       if (input.decision === 'approve') {
-        const total = capacidade.get(item.referenciaId)
+        // Quantas unidades existem: material = estoque cadastrado; chave = 1. Inativo não pode ser aprovado.
+        const total =
+          item.tipo === 'MATERIAL'
+            ? (await materialRepository.findActiveById(item.referenciaId, connection))?.quantidadeTotal
+            : (await chaveRepository.findActiveById(item.referenciaId, connection)) && 1
         if (total === undefined) throw new HttpError(409, `${item.nome} está inativo no cadastro.`)
 
         // Reconfere a disponibilidade AGORA: dois pedidos pendentes podem ter pedido o mesmo item.
-        const janela = { data: alvo.dataUtilizacao, inicio: alvo.retiradaPrevista, fim: alvo.devolucaoPrevista }
-        const livre = total - quantidadeOcupada(solicitacoes, item.tipo, item.referenciaId, janela)
+        // Travar o cadastro do item faz o segundo aprovador esperar e enxergar o estoque já atualizado.
+        await travarItens([item], connection)
+        const janela = { data: cabecalho.dataUtilizacao, inicio: cabecalho.retiradaPrevista, fim: cabecalho.devolucaoPrevista }
+        const livre = total - (await quantidadeOcupada(item.tipo, item.referenciaId, janela, connection))
         if (item.quantidade > livre) {
           throw new HttpError(409, `${item.nome} não tem unidades suficientes nesse horário (livres: ${Math.max(0, livre)}).`)
         }
-        item.status = 'APROVADO'
+        await solicitacaoRepository.updateItem(
+          item.id,
+          { status: 'APROVADO', atualizadoEm: now, decididoPorId: coordenador.id },
+          connection,
+        )
       } else {
-        item.status = 'RECUSADO'
-        item.motivoRecusa = input.reason
+        await solicitacaoRepository.updateItem(
+          item.id,
+          { status: 'RECUSADO', atualizadoEm: now, decididoPorId: coordenador.id, motivoRecusa: input.reason },
+          connection,
+        )
       }
 
-      item.atualizadoEm = now.toISOString()
-      item.decididoPorId = coordenador.id
-      return alvo
+      await solicitacaoRepository.refreshStatusGeral(cabecalho.id, connection)
+      return (await solicitacaoRepository.findById(cabecalho.id, connection))!
     })
 
-    const solicitante = await usuarioRepository.findById(solicitacao.usuarioId)
+    const [salas, solicitante] = await Promise.all([chaveRepository.listSalas(), usuarioRepository.findById(solicitacao.usuarioId)])
     return { ...toSolicitacaoView(solicitacao, salas), requester: toRequester(solicitante) }
   },
 }

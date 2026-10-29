@@ -114,6 +114,8 @@ describe("telas com API", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(
       <RequestDetailsLoader
+        onHome={vi.fn()}
+        onNewRequest={vi.fn()}
         session={session}
         selectedRequest={{
           id: "real-1",

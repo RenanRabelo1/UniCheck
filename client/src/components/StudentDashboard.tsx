@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import type { DashboardSession } from "../modules/dashboard/dashboard.types";
 import { useDashboard } from "../modules/dashboard/useDashboard";
+import { AppTopNav } from "./AppTopNav";
 import "./StudentDashboard.css";
 
 type StudentDashboardProps = {
@@ -113,13 +114,6 @@ export function StudentDashboard({
 
   const { user, summary, recentActivity } = data;
 
-  const initials = user.name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("");
-
   const today = new Intl.DateTimeFormat("pt-BR", {
     weekday: "long",
     day: "numeric",
@@ -159,55 +153,14 @@ export function StudentDashboard({
 
   return (
     <div className="student-home">
-      <header className="student-header">
-        <div className="student-container student-header-inner">
-          <div className="student-brand">
-            <span className="student-brand-mark">CCT</span>
-
-            <div>
-              <img src="/brand/unifor.svg" alt="UNIFOR" />
-              <small>C. Ciências Tecnológicas</small>
-            </div>
-          </div>
-
-          <nav className="student-nav" aria-label="Menu do aluno">
-            <button
-              className="student-nav-active"
-              aria-current="page"
-              onClick={() => window.scrollTo({ top: 0 })}
-            >
-              <Icon name="home" />
-              Início
-            </button>
-
-            <button onClick={onNewRequest}>
-              <Icon name="plus" />
-              Nova Solicitação
-            </button>
-
-            <button onClick={onMyRequests}>
-              <Icon name="list" />
-              Minhas Solicitações
-            </button>
-          </nav>
-
-          <div className="student-profile">
-            <span className="student-avatar" aria-hidden="true">
-              {initials}
-            </span>
-
-            <div className="student-profile-info">
-              <strong>{user.name}</strong>
-              <span>{user.roleLabel}</span>
-            </div>
-
-            <button className="student-logout" onClick={onLogout}>
-              <Icon name="logout" />
-              Sair
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppTopNav
+        user={user}
+        active="home"
+        onHome={() => window.scrollTo({ top: 0 })}
+        onNewRequest={onNewRequest}
+        onMyRequests={onMyRequests}
+        onLogout={onLogout}
+      />
 
       <main className="student-container student-content">
         <section className="student-welcome" aria-labelledby="student-title">
@@ -278,30 +231,6 @@ export function StudentDashboard({
               </span>
             </article>
           ))}
-        </section>
-
-        <section className="student-shortcuts" aria-label="Acesso rápido">
-          <button className="student-shortcut" onClick={onNewRequest}>
-            <span className="student-shortcut-icon student-shortcut-primary">
-              <Icon name="plus" />
-            </span>
-
-            <span>
-              <strong>Nova Solicitação</strong>
-              <small>Solicite chaves para seu projeto</small>
-            </span>
-          </button>
-
-          <button className="student-shortcut" onClick={onMyRequests}>
-            <span className="student-shortcut-icon">
-              <Icon name="list" />
-            </span>
-
-            <span>
-              <strong>Minhas Solicitações</strong>
-              <small>Acompanhe suas atividades recentes</small>
-            </span>
-          </button>
         </section>
 
         <section
