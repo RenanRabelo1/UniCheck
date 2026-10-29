@@ -1,11 +1,8 @@
 import request from 'supertest'
-import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fixNow, start } from '../../testing/testApp.js'
 
 afterEach(() => vi.useRealTimers())
-afterAll(() => {
-  delete process.env.DATA_FILE
-})
 
 const verificar = (ctx: Awaited<ReturnType<typeof start>>, token = ctx.coord) =>
   request(ctx.app).post('/alertas/verificar').set('Authorization', token)
@@ -21,10 +18,10 @@ describe('verificação de atrasos (22:40)', () => {
   it('depois das 22:40 marca os itens em posse como atrasados, uma única vez', async () => {
     const ctx = await start('2026-10-05T22:41:00-03:00')
 
-    expect((await verificar(ctx)).body).toEqual({ created: 4 }) // item-004, 005, 006 e 008
+    expect((await verificar(ctx)).body).toEqual({ created: 4 }) // 1004, 005, 006 e 008
     expect((await verificar(ctx)).body).toEqual({ created: 0 }) // repetir não duplica
 
-    const alertas = await request(ctx.app).get('/alertas').set('Authorization', ctx.staff)
+    const alertas = await request(ctx.app).get('/alertas').set('Authorization', ctx.coord)
     expect(alertas.status).toBe(200)
     expect(alertas.body).toHaveLength(4)
     expect(alertas.body[0]).toMatchObject({ status: 'open', resolvedAt: null })
@@ -41,13 +38,13 @@ describe('verificação de atrasos (22:40)', () => {
 
     const devolucao = await request(ctx.app)
       .post('/movimentacoes/devolucoes')
-      .set('Authorization', ctx.staff)
-      .send({ requestId: 'sol-003', itemId: 'item-004' })
+      .set('Authorization', ctx.coord)
+      .send({ requestId: '1003', itemId: '1004' })
     expect(devolucao.body.wasLate).toBe(true)
 
-    const abertos = await request(ctx.app).get('/alertas').set('Authorization', ctx.staff)
+    const abertos = await request(ctx.app).get('/alertas').set('Authorization', ctx.coord)
     expect(abertos.body).toHaveLength(3)
-    const resolvidos = await request(ctx.app).get('/alertas?status=resolved').set('Authorization', ctx.staff)
+    const resolvidos = await request(ctx.app).get('/alertas?status=resolved').set('Authorization', ctx.coord)
     expect(resolvidos.body).toHaveLength(1)
     expect(resolvidos.body[0]).toMatchObject({ itemName: 'Projetor Epson WXGA', status: 'resolved' })
   })
@@ -61,7 +58,7 @@ describe('verificação de atrasos (22:40)', () => {
 
   it('só a Coordenação dispara a verificação; a lista é restrita', async () => {
     const ctx = await start('2026-10-05T22:41:00-03:00')
-    expect((await verificar(ctx, ctx.staff)).status).toBe(403)
+    expect((await verificar(ctx, ctx.professor)).status).toBe(403)
     expect((await request(ctx.app).get('/alertas').set('Authorization', ctx.professor)).status).toBe(403)
     expect((await request(ctx.app).get('/alertas?status=xyz').set('Authorization', ctx.coord)).status).toBe(400)
   })

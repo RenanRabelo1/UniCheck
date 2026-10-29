@@ -35,7 +35,7 @@
   color: #004af7;
 }
 .confirmation-content {
-  width: min(960px, calc(100% - 40px));
+  width: min(1240px, calc(100% - 40px));
   margin: auto;
   padding: 26px 0 42px;
   display: grid;
@@ -125,12 +125,13 @@
 }
 .confirmation-intro h1 {
   margin: 10px 0 4px;
-  font-size: 24px;
+  font-size: clamp(27px, 4vw, 34px);
+  letter-spacing: -1.1px;
 }
 .confirmation-intro p {
   margin: 0;
   color: #535353;
-  font-size: 13px;
+  font-size: 14px;
 }
 .confirmation-intro button,
 .confirmation-card header button {

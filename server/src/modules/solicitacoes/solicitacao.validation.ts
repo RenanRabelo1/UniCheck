@@ -20,6 +20,8 @@ export const createSolicitacaoSchema = z.object({
   items: z
     .array(
       z.object({
+        // Materiais e chaves têm numeração própria: o tipo diz em qual cadastro procurar o id.
+        type: z.enum(['material', 'key'], { error: 'Informe o tipo do item (material ou key).' }),
         id: z.string({ error: 'Informe o item.' }).min(1, 'Informe o item.'),
         quantity: z
           .number({ error: 'Quantidade inválida.' })

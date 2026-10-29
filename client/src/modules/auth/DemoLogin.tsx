@@ -13,7 +13,6 @@ type DemoLoginProps = {
   showPassword: boolean;
   message: string;
   messageType: "error" | "success";
-  isStudent: boolean;
   identifierLabel: string;
   identifierPlaceholder: string;
   onRoleChange: (role: DemoRole) => void;
@@ -22,6 +21,7 @@ type DemoLoginProps = {
   onPasswordVisibilityToggle: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onQuickAccess: (item: QuickAccess) => void;
+  onCreateAccount: () => void;
 };
 
 const highlights = [
@@ -38,7 +38,6 @@ export function DemoLogin({
   showPassword,
   message,
   messageType,
-  isStudent,
   identifierLabel,
   identifierPlaceholder,
   onRoleChange,
@@ -47,6 +46,7 @@ export function DemoLogin({
   onPasswordVisibilityToggle,
   onSubmit,
   onQuickAccess,
+  onCreateAccount,
 }: DemoLoginProps) {
   const currentRole = demoRoles.find((item) => item.id === role)!;
 
@@ -98,11 +98,11 @@ export function DemoLogin({
             <label htmlFor="identifier">{identifierLabel}</label>
             <input
               id="identifier"
-              type={isStudent ? "email" : "text"}
+              type="text"
               value={identifier}
               onChange={(event) => onIdentifierChange(event.target.value)}
               placeholder={identifierPlaceholder}
-              autoComplete={isStudent ? "email" : "username"}
+              autoComplete="username"
             />
 
             <label htmlFor="password">
@@ -138,6 +138,13 @@ export function DemoLogin({
               Acessar <span aria-hidden="true">→</span>
             </button>
           </form>
+
+          <p className="auth-switch">
+            Ainda não tem conta?{" "}
+            <button type="button" className="link-button" onClick={onCreateAccount}>
+              Criar conta
+            </button>
+          </p>
 
           <div className="quick-access">
             <p>Acesso rápido (demonstração)</p>

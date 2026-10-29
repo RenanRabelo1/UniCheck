@@ -1,7 +1,15 @@
 import { z } from "zod";
-import { ApiError, getJson } from "./api";
-import type { MyRequest, MyRequestStatus } from "../modules/solicitacoes/types";
-import type { RequestDetails } from "../components/RequestFlow.types";
+import { ApiError, getJson, postJson } from "./api";
+import type {
+  MyRequest,
+  MyRequestStatus,
+  RequestOptions,
+  RequestWindow,
+} from "../modules/solicitacoes/types";
+import type {
+  RequestDetails,
+  RequestDraft,
+} from "../components/RequestFlow.types";
 
 const itemSchema = z.object({
   id: z.string(),
@@ -192,4 +200,63 @@ export async function getRequestDetails(
       .sort((a, b) => b.date.localeCompare(a.date))
       .map((event) => ({ ...event, date: dateTime(event.date) })),
   };
+}
+
+// ---- Nova solicitação ----
+
+const catalogItemSchema = z.object({
+  type: z.enum(["material", "key"]),
+  id: z.string(),
+  name: z.string(),
+  detail: z.string().nullable(),
+  roomId: z.string().nullable(),
+  total: z.number(),
+  available: z.number(),
+  locked: z.boolean(),
+  lockedReason: z.string().nullable(),
+});
+const optionsSchema = z.object({
+  rooms: z.array(z.object({ value: z.string(), label: z.string() })),
+  items: z.array(catalogItemSchema),
+  authorization: z
+    .object({
+      project: z.string(),
+      responsibleProfessor: z.string().nullable(),
+    })
+    .nullable(),
+});
+
+/** Salas e lista de materiais/chaves. Com a janela, cada item traz as unidades livres naquele horário. */
+export async function getRequestOptions(
+  window?: RequestWindow,
+  signal?: AbortSignal,
+): Promise<RequestOptions> {
+  const query = window
+    ? `?${new URLSearchParams({ date: window.date, pickupTime: window.pickupTime, returnTime: window.returnTime })}`
+    : "";
+  return optionsSchema.parse(
+    await getJson(`/solicitacoes/opcoes${query}`, token(), signal),
+  );
+}
+
+const createdSchema = z.object({ id: z.string(), protocol: z.string() });
+
+/** Grava a solicitação no servidor (e no banco). Devolve o protocolo gerado. */
+export async function createRequest(
+  draft: RequestDraft,
+): Promise<{ id: string; protocol: string }> {
+  return createdSchema.parse(
+    await postJson(
+      "/solicitacoes",
+      {
+        date: draft.date,
+        room: draft.roomId,
+        pickupTime: draft.pickupTime,
+        returnTime: draft.returnTime,
+        notes: draft.notes.trim() || undefined,
+        items: draft.items,
+      },
+      token(),
+    ),
+  );
 }

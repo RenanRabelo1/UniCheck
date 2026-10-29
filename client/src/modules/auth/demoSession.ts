@@ -87,3 +87,29 @@ export function createDemoSession(
     },
   };
 }
+
+const registeredRoleLabels: Record<DemoRole, string> = {
+  professor: "Professor",
+  student: "Aluno",
+  coordinator: "Coordenador CCT",
+};
+
+/** Modo demonstração (sem API): "cadastra" a pessoa só na memória, com os dados digitados. */
+export function createRegisteredSession(data: {
+  role: DemoRole;
+  name: string;
+  registration: string;
+}): DemoSession {
+  const user = {
+    name: data.name,
+    registration: data.registration,
+    roleLabel: registeredRoleLabels[data.role],
+  };
+  if (data.role === "coordinator") {
+    return {
+      role: data.role,
+      dashboard: { ...user, role: data.role, location: "Secretaria CCT J-02" },
+    };
+  }
+  return { role: data.role, dashboard: { ...user, role: data.role } };
+}

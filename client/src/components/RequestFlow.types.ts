@@ -9,7 +9,18 @@ export type RequestConfirmationItem = {
   withdrawalLocation?: string;
 };
 
+/** O que o usuário escolheu no formulário: serve para enviar ao servidor e para voltar e editar. */
+export type RequestDraft = {
+  roomId: string;
+  date: string;
+  pickupTime: string;
+  returnTime: string;
+  notes: string;
+  items: { type: "material" | "key"; id: string; quantity: number }[];
+};
+
 export type RequestConfirmationData = {
+  draft?: RequestDraft;
   usageDate: string;
   location: string;
   pickupTime: string;

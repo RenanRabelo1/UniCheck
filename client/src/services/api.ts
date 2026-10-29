@@ -49,5 +49,5 @@ export const getJson = <T>(
   token?: string,
   signal?: AbortSignal,
 ) => requestJson<T>(path, { signal }, token);
-export const postJson = <T>(path: string, body: unknown) =>
-  requestJson<T>(path, { method: "POST", body: JSON.stringify(body) });
+export const postJson = <T>(path: string, body: unknown, token?: string) =>
+  requestJson<T>(path, { method: "POST", body: JSON.stringify(body) }, token);

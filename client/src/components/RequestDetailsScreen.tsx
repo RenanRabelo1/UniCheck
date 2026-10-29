@@ -1,3 +1,4 @@
+import { AppTopNav, type AppTopNavProps } from "./AppTopNav";
 import "./RequestDetailsScreen.css";
 import { requestDetailsMock } from "./RequestDetailsScreen.mock";
 import type { RequestDetails, RequestItemStatus } from "./RequestFlow.types";
@@ -12,6 +13,8 @@ export type {
 type RequestDetailsScreenProps = {
   request?: RequestDetails;
   onBack: () => void;
+  /** Dados e ações da barra do topo (mesmo menu das outras telas de solicitação). */
+  nav: Omit<AppTopNavProps, "active">;
 };
 
 const statusLabels: Record<RequestItemStatus, string> = {
@@ -37,6 +40,7 @@ function initials(name: string) {
 export function RequestDetailsScreen({
   request = requestDetailsMock,
   onBack,
+  nav,
 }: RequestDetailsScreenProps) {
   const activeCustodyItems = request.items.filter(
     (item) => item.status === "RETIRADO" || item.status === "ATRASADO",
@@ -44,22 +48,7 @@ export function RequestDetailsScreen({
 
   return (
     <div className="request-details-page">
-      <header className="request-details-header">
-        <div className="request-details-container request-details-header-inner">
-          <div className="request-details-brand">
-            <span aria-hidden="true">CCT</span>
-            <div>
-              <img src="/brand/unifor.svg" alt="UNIFOR" />
-              <small>Controle de Empréstimos · Bloco J-02</small>
-            </div>
-          </div>
-
-          <button className="request-details-header-back" onClick={onBack}>
-            <span aria-hidden="true">←</span>
-            Voltar para minhas solicitações
-          </button>
-        </div>
-      </header>
+      <AppTopNav {...nav} active="requests" />
 
       <main className="request-details-container request-details-content">
         <nav

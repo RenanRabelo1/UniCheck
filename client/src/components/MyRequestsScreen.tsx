@@ -8,11 +8,14 @@ import {
   type MyRequest,
   type MyRequestStatus,
 } from "./MyRequestsScreen.mock";
+import { AppTopNav, type AppTopNavExtras } from "./AppTopNav";
 import "./MyRequestsScreen.css";
 
 export type MyRequestsScreenProps = {
   session: DashboardSession;
   onBack: () => void;
+  /** Botões extras da barra do topo (Sair, Materiais). */
+  navExtras?: AppTopNavExtras;
   onNewRequest: () => void;
   onOpenRequest: (request: MyRequest) => void;
 };
@@ -52,6 +55,7 @@ export function MyRequestsScreen({
   onBack,
   onNewRequest,
   onOpenRequest,
+  navExtras,
 }: MyRequestsScreenProps) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -133,40 +137,14 @@ export function MyRequestsScreen({
 
   return (
     <main className="my-requests-page">
-      <header className="my-requests-header">
-        <div className="my-requests-header__content">
-          <button className="my-requests-brand" type="button" onClick={onBack}>
-            <img src="/brand/unifor.svg" alt="Unifor" />
-            <span aria-hidden="true" />
-            <span>
-              <strong>Sistema CCT</strong>
-              <small>Controle de Empréstimos · Bloco J-02</small>
-            </span>
-          </button>
-
-          <nav className="my-requests-nav" aria-label="Navegação principal">
-            <button type="button" onClick={onBack}>
-              Início
-            </button>
-            <button type="button" onClick={onNewRequest}>
-              Nova solicitação
-            </button>
-            <button type="button" className="active" aria-current="page">
-              Minhas solicitações
-            </button>
-          </nav>
-
-          <div className="my-requests-profile">
-            <span className="my-requests-profile__copy">
-              <strong>{session.name}</strong>
-              <small>{session.roleLabel} · Bloco J-02</small>
-            </span>
-            <span className="my-requests-profile__avatar" aria-hidden="true">
-              {session.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        </div>
-      </header>
+      <AppTopNav
+        user={session}
+        active="requests"
+        onHome={onBack}
+        onNewRequest={onNewRequest}
+        onMyRequests={() => undefined}
+        {...navExtras}
+      />
 
       <section className="my-requests-content">
         <aside
@@ -192,21 +170,27 @@ export function MyRequestsScreen({
               ▣ Gestão de recursos e chaves
             </span>
             <h1>Minhas solicitações</h1>
-            <button type="button" onClick={retry}>
-              Atualizar solicitações
-            </button>
             <p>
               Acompanhe o andamento das suas solicitações de materiais e chaves
               laboratoriais.
             </p>
           </div>
-          <button
-            className="my-requests-new"
-            type="button"
-            onClick={onNewRequest}
-          >
-            <span aria-hidden="true">＋</span> Nova solicitação
-          </button>
+          <div className="my-requests-title-actions">
+            <button
+              className="my-requests-refresh"
+              type="button"
+              onClick={retry}
+            >
+              <span aria-hidden="true">↻</span> Atualizar
+            </button>
+            <button
+              className="my-requests-new"
+              type="button"
+              onClick={onNewRequest}
+            >
+              <span aria-hidden="true">＋</span> Nova solicitação
+            </button>
+          </div>
         </div>
 
         <section

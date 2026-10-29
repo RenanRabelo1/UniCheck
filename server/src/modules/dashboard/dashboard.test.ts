@@ -7,9 +7,6 @@ let app: TestApp
 beforeAll(async () => {
   app = await createTestApp()
 })
-afterAll(() => {
-  delete process.env.DATA_FILE
-})
 const PASSWORD = 'unicheck123'
 
 async function loginAs(identifier: string, role?: string) {
@@ -22,7 +19,7 @@ describe('POST /auth/login', () => {
     const response = await loginAs('2048819', 'professor')
     expect(response.status).toBe(200)
     expect(response.body.token).toEqual(expect.any(String))
-    expect(response.body.user).toMatchObject({ name: 'Prof. Ricardo Mendes', role: 'professor', registration: '2048819/CCT' })
+    expect(response.body.user).toMatchObject({ name: 'Prof. Ricardo Mendes', role: 'professor', registration: '2048819' })
   })
 
   it('rejeita senha errada', async () => {

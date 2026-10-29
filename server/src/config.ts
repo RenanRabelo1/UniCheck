@@ -1,10 +1,7 @@
 import dotenv from 'dotenv'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 dotenv.config({ quiet: true })
 
-const dataDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data')
 const isProduction = process.env.NODE_ENV === 'production'
 const jwtSecret = process.env.JWT_SECRET
 
@@ -18,8 +15,12 @@ export const config = {
   jwtSecret: jwtSecret ?? 'unicheck-segredo-apenas-para-desenvolvimento',
   jwtExpiresIn: '8h' as const,
   corsOrigins: (process.env.CORS_ORIGIN ?? 'http://localhost:5173').split(',').map((origin) => origin.trim()),
-  // "Banco" provisório em JSON. Será trocado por MySQL/Supabase nos repositories.
-  // db.seed.json (versionado) é o ponto de partida; db.json (ignorado pelo Git) é o que o servidor usa e altera.
-  dataFile: process.env.DATA_FILE ?? path.join(dataDir, 'db.json'),
-  seedFile: path.join(dataDir, 'db.seed.json'),
+  // MySQL: valores do .env de cada membro (veja .env.example). O padrão serve para um MySQL local.
+  database: {
+    host: process.env.DB_HOST ?? 'localhost',
+    port: Number(process.env.DB_PORT ?? 3306),
+    user: process.env.DB_USER ?? 'root',
+    password: process.env.DB_PASSWORD ?? '',
+    name: process.env.DB_NAME ?? 'unicheck',
+  },
 }

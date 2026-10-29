@@ -1,4 +1,5 @@
 import { useDashboard } from "../modules/dashboard/useDashboard";
+import { AppTopNav } from "./AppTopNav";
 import { DashboardSession } from "../modules/dashboard/dashboard.types";
 
 type UserDashboardProps = {
@@ -67,46 +68,15 @@ export function UserDashboard({
   ];
   return (
     <main className="dashboard-page">
-      <header className="dashboard-header">
-        <div className="dashboard-header-content">
-          <div className="dashboard-brand">
-            <img src="/brand/unifor.svg" alt="Unifor" />
-            <span />
-            <div>
-              <strong>Sistema CCT</strong>
-              <small>Controle de Empréstimos · Bloco J-02</small>
-            </div>
-          </div>
-          <nav aria-label="Navegação principal" className="dashboard-nav">
-            <a className="active" href="#inicio">
-              Início
-            </a>
-            <button type="button" onClick={onMyRequests}>
-              Minhas solicitações
-            </button>
-            <button type="button" onClick={onMaterials}>
-              Materiais
-            </button>
-          </nav>
-          <div className="profile-menu">
-            <div className="profile-avatar" aria-hidden="true">
-              {user.name.charAt(0)}
-            </div>
-            <div className="profile-copy">
-              <strong>{user.name}</strong>
-              <small>{user.roleLabel} · Bloco J-02</small>
-            </div>
-            <button
-              type="button"
-              onClick={onLogout}
-              aria-label="Encerrar sessão"
-              title="Encerrar sessão"
-            >
-              ↪
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppTopNav
+        user={user}
+        active="home"
+        onHome={() => window.scrollTo({ top: 0 })}
+        onNewRequest={onNewRequest}
+        onMyRequests={onMyRequests}
+        onMaterials={onMaterials}
+        onLogout={onLogout}
+      />
 
       <section className="dashboard-content" id="inicio">
         <section className="welcome-card" aria-labelledby="welcome-title">
@@ -189,9 +159,6 @@ export function UserDashboard({
                 laboratório
               </p>
             </div>
-            <button type="button" onClick={onMyRequests}>
-              Ver todas as solicitações →
-            </button>
           </div>
           <div className="activity-list">
             {recentActivity.map((item) => (
