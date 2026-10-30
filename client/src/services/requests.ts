@@ -29,7 +29,7 @@ const itemSchema = z.object({
   updatedAt: z.string(),
   refusalReason: z.string().nullable(),
 });
-const requestSchema = z.object({
+export const requestSchema = z.object({
   id: z.string(),
   protocol: z.string(),
   semester: z.string(),

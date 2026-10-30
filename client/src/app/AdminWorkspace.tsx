@@ -1,3 +1,4 @@
+import { isApiMode } from "../services/api";
 import type { ReactNode } from "react";
 
 import type { AdminView } from "./navigation";
@@ -23,7 +24,7 @@ const adminViews: Array<{ view: AdminView; label: string }> = [
   { view: "admin-history", label: "Histórico" },
 ];
 
-/** Moldura de navegação exclusivamente visual para os módulos administrativos. */
+/** Identifica quais módulos já persistem as alterações. */
 export function AdminWorkspace({
   activeView,
   onBackToDashboard,
@@ -31,24 +32,39 @@ export function AdminWorkspace({
   selectedRequestId,
   children,
 }: AdminWorkspaceProps) {
+  const connected =
+    isApiMode() && ["admin-pending", "admin-analysis"].includes(activeView);
   return (
     <div className="admin-workspace">
       <header className="admin-workspace__header">
         <div>
-          <button type="button" className="admin-workspace__back" onClick={onBackToDashboard}>
+          <button
+            type="button"
+            className="admin-workspace__back"
+            onClick={onBackToDashboard}
+          >
             ← Painel administrativo
           </button>
-          <p>Secretaria CCT · ambiente demonstrativo</p>
+          <p>
+            Secretaria CCT ·{" "}
+            {connected ? "Solicitações" : "ambiente demonstrativo"}
+          </p>
         </div>
         <span>
-          {selectedRequestId
-            ? `Solicitação em demonstração: ${selectedRequestId}. `
-            : ""}
-          Dados locais — nenhuma alteração é persistida.
+          {connected ? (
+            "Pedidos reais · Os pareceres são salvos no sistema."
+          ) : (
+            <>
+              {selectedRequestId
+                ? `Solicitação em demonstração: ${selectedRequestId}. `
+                : ""}
+              Dados locais — nenhuma alteração é persistida.
+            </>
+          )}
         </span>
       </header>
 
-      <nav className="admin-workspace__nav" aria-label="Telas administrativas demonstrativas">
+      <nav className="admin-workspace__nav" aria-label="Telas administrativas">
         {adminViews.map((item) => (
           <button
             type="button"

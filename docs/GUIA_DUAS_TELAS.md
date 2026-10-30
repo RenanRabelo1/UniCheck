@@ -1,5 +1,7 @@
 # UniCheck — Minhas solicitações e Detalhes da solicitação
 
+> Guia da etapa anterior. O servidor agora usa MySQL; para configurar o banco e instalar a versão atual, siga `GUIA_COORDENACAO.md`. Comandos antigos referentes a JSON não se aplicam.
+
 ## O que esta entrega faz
 
 - Login real em `VITE_DATA_SOURCE=api`, utilizando POST /auth/login e JWT.

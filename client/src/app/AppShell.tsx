@@ -1,3 +1,5 @@
+import { PendingRequestsApi } from "../modules/admin/requests-api/PendingRequestsApi";
+import { RequestAnalysisApi } from "../modules/admin/requests-api/RequestAnalysisApi";
 import { isApiMode } from "../services/api";
 import { createRequest } from "../services/requests";
 import { useState, type FormEvent } from "react";
@@ -101,7 +103,14 @@ export function AppShell() {
 
       switch (activeAdminView) {
         case "admin-pending":
-          screen = (
+          screen = isApiMode() ? (
+            <PendingRequestsApi
+              onAnalyzeRequest={(id) => {
+                setSelectedAdminRequestId(id);
+                goToAdminView("admin-analysis");
+              }}
+            />
+          ) : (
             <PendingRequestsScreen
               onAnalyzeRequest={(requestId) => {
                 setSelectedAdminRequestId(requestId);
@@ -111,7 +120,12 @@ export function AppShell() {
           );
           break;
         case "admin-analysis":
-          screen = (
+          screen = isApiMode() ? (
+            <RequestAnalysisApi
+              requestId={selectedAdminRequestId}
+              onBackToPending={() => goToAdminView("admin-pending")}
+            />
+          ) : (
             <RequestAnalysisScreen
               onBackToPending={() => goToAdminView("admin-pending")}
               onCompleteAnalysis={() => goToAdminView("admin-checkout")}
@@ -188,8 +202,9 @@ export function AppShell() {
           if (view) setActiveView(view);
         }}
         onViewRequest={(requestId) => {
-          setSelectedAdminRequestId(requestId);
-          setActiveView("admin-analysis");
+          // Os cards do painel ainda são demonstrativos; escolha o pedido real na fila.
+          setSelectedAdminRequestId(isApiMode() ? null : requestId);
+          setActiveView(isApiMode() ? "admin-pending" : "admin-analysis");
         }}
       />
     );

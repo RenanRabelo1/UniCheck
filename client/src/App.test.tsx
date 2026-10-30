@@ -11,16 +11,19 @@ describe("fluxos principais do frontend", () => {
   it("navega do painel do professor para uma nova solicitação e encerra a sessão", async () => {
     render(<App />);
 
-    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
-      target: { value: "2048819" },
-    });
+    fireEvent.change(
+      screen.getByLabelText("E-mail institucional ou matrícula"),
+      {
+        target: { value: "2048819" },
+      },
+    );
     fireEvent.change(screen.getByLabelText("Senha"), {
       target: { value: "senha-demo" },
     });
     fireEvent.click(screen.getByRole("button", { name: /Acessar/ }));
 
     fireEvent.click(
-      await screen.findByRole("button", { name: /Nova solicitação/ }),
+      await screen.findByRole("button", { name: "Nova solicitação" }),
     );
 
     expect(
@@ -48,9 +51,12 @@ describe("fluxos principais do frontend", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("tab", { name: "Coordenador CCT" }));
-    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
-      target: { value: "18024900" },
-    });
+    fireEvent.change(
+      screen.getByLabelText("E-mail institucional ou matrícula"),
+      {
+        target: { value: "18024900" },
+      },
+    );
     fireEvent.change(screen.getByLabelText(/Senha/), {
       target: { value: "12345678" },
     });
@@ -65,9 +71,12 @@ describe("fluxos principais do frontend", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("tab", { name: "Aluno" }));
-    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
-      target: { value: "aluno.autorizado@unifor.br" },
-    });
+    fireEvent.change(
+      screen.getByLabelText("E-mail institucional ou matrícula"),
+      {
+        target: { value: "aluno.autorizado@unifor.br" },
+      },
+    );
     fireEvent.change(screen.getByLabelText("Senha"), {
       target: { value: "senha-demo" },
     });
@@ -78,46 +87,39 @@ describe("fluxos principais do frontend", () => {
     ).toBeTruthy();
   });
 
-  it("permite ao professor consultar o catálogo e trazer uma seleção ao formulário", async () => {
+  it("permite ao professor selecionar e remover um item na nova solicitação", async () => {
     render(<App />);
 
-    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
-      target: { value: "2048819" },
-    });
+    fireEvent.change(
+      screen.getByLabelText("E-mail institucional ou matrícula"),
+      {
+        target: { value: "2048819" },
+      },
+    );
     fireEvent.change(screen.getByLabelText("Senha"), {
       target: { value: "senha-demo" },
     });
     fireEvent.click(screen.getByRole("button", { name: /Acessar/ }));
     fireEvent.click(
-      await screen.findByRole("button", { name: /Nova solicitação/ }),
+      await screen.findByRole("button", { name: "Nova solicitação" }),
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Consultar catálogo de materiais" }),
-    );
-
-    expect(
-      screen.getByRole("heading", { name: "Materiais disponíveis" }),
-    ).toBeTruthy();
-    fireEvent.click(
-      screen.getAllByRole("button", { name: "Selecionar material" })[0],
-    );
-    fireEvent.click(
-      await screen.findByRole("button", {
-        name: "Usar na solicitação demonstrativa",
-      }),
-    );
-
-    expect(
-      (screen.getByLabelText("Material *") as HTMLSelectElement).value,
-    ).toBe("notebook");
+    const item = await screen.findByRole("checkbox", { name: /Notebook/ });
+    fireEvent.click(item);
+    expect(item.getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByText("1 item escolhido")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Remover Notebook/ }));
+    expect(item.getAttribute("aria-checked")).toBe("false");
   });
 
   it("abre o catálogo pelo item Materiais do painel do professor", async () => {
     render(<App />);
 
-    fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
-      target: { value: "2048819" },
-    });
+    fireEvent.change(
+      screen.getByLabelText("E-mail institucional ou matrícula"),
+      {
+        target: { value: "2048819" },
+      },
+    );
     fireEvent.change(screen.getByLabelText("Senha"), {
       target: { value: "senha-demo" },
     });
@@ -128,11 +130,11 @@ describe("fluxos principais do frontend", () => {
       screen.getByRole("heading", { name: "Materiais disponíveis" }),
     ).toBeTruthy();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "← Voltar ao painel" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "← Voltar ao painel" }));
     expect(
-      await screen.findByRole("heading", { name: /Olá, Prof\. Ricardo Mendes/ }),
+      await screen.findByRole("heading", {
+        name: /Olá, Prof\. Ricardo Mendes/,
+      }),
     ).toBeTruthy();
   });
 

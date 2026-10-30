@@ -1,101 +1,53 @@
 # Estrutura do Projeto UniCheck
 
-Este documento descreve o checkout atual do UniCheck e separa o que já funciona no protótipo do que pertence ao roadmap de integração e MySQL.
+## Arquitetura atual
 
-## Runtime atual do protótipo
+React/Vite (`client/`) → API REST Node.js/Express (`server/`) → MySQL 8.0.16 ou superior.
 
-```text
-React/Vite (telas demonstrativas e mocks) -> API REST Node.js -> JSON
-                                                        server/data/db.json
+A migração para MySQL está no código recebido da equipe: conexão em `server/src/database/connection.ts`, migrations 001–005, seed SQL e repositories SQL. Os documentos anteriores que descreviam JSON estavam desatualizados. O banco é local a cada integrante; não acompanha o código do GitHub.
+
+## Integração das telas
+
+Com `VITE_DATA_SOURCE=api`, cadastro/login, Nova solicitação, Minhas solicitações e detalhes usam a API. Esta entrega acrescenta Pendências e Análise da solicitação para coordenação. As demais telas administrativas e os indicadores do painel administrativo continuam demonstrativos. O modo `mock` preserva as telas de demonstração.
+
+- `client/src/app/AppShell.tsx`: sessão e navegação; escolhe os módulos reais ou demonstrativos.
+- `client/src/services/api.ts`: HTTP e tratamento de erros; `adminRequests.ts`: contratos e operações administrativas.
+- `client/src/modules/admin/requests-api/`: fila e análise integradas, com estilos das telas existentes.
+- `server/src/routes/index.ts`: registro de rotas.
+- `server/src/modules/`: rotas/controllers, validações, services e repositories por domínio.
+- `server/src/database/`: conexão, transações, migrations, seed e tipos.
+
+Services aplicam regras; repositories executam SQL. A aprovação existente usa transação e bloqueios para reconferir disponibilidade. A recusa exige motivo. O servidor mantém a autoridade sobre autenticação, permissões e transições.
+
+## Configuração
+
+Na raiz: `npm ci`. Copie os modelos `server/.env.example` e `client/.env.example` para `.env` nas respectivas pastas. Preencha as credenciais locais do MySQL no servidor. No client, configure `VITE_DATA_SOURCE=api` e `VITE_API_URL=http://localhost:3000`.
+
+Execute na raiz:
+
+```sh
+npm run migrate --workspace=@unicheck/server
+npm run db:check --workspace=@unicheck/server
 ```
 
-- O client possui login real e consulta de Minhas solicitações/Detalhes quando `VITE_DATA_SOURCE=api`. O token é guardado em sessionStorage e as consultas são restritas ao usuário. Criação de pedidos e administração ainda são demonstrativas. Consulte `GUIA_DUAS_TELAS.md`.
-- O server é uma API Express em TypeScript. Seus repositories ativos usam `server/src/database/jsonDatabase.ts`, que lê e grava `server/data/db.json` a partir do seed versionado `server/data/db.seed.json`.
-- `CORS_ORIGIN` é a variável de ambiente usada pelo servidor para definir origens autorizadas. `DATA_FILE` é opcional e permite trocar o arquivo JSON em testes ou uso local.
+Em um banco novo de desenvolvimento, use `npm run db:seed --workspace=@unicheck/server` para carregar os exemplos. Não é necessário reaplicar o seed para instalar esta entrega. O seed pode redefinir registros de demonstração existentes.
 
-## Roadmap de arquitetura
+Abra dois terminais na raiz, com `npm run dev:server` e `npm run dev:client`. Não envie `.env` ou credenciais reais ao GitHub.
 
-```text
-React/Vite -> API REST Node.js -> MySQL
+## Verificações
+
+```sh
+npm test
+npm run lint
+npm run format
+npm run build --workspace=@unicheck/client
+npm run build --workspace=@unicheck/server
 ```
 
-Esta é a arquitetura planejada, não a persistência atual. O projeto já inclui `mysql2` e `controle_emprestimos.sql` como referência do modelo futuro, mas não há conexão MySQL, migrations executáveis nem repositories SQL ativos. O script `migrate` referencia `src/database/runMigrations.ts`, arquivo que ainda não existe; portanto, não deve ser usado como instrução de setup atual.
+Os testes de integração do servidor requerem MySQL acessível e permissão para criar/reinicializar um banco cujo nome termina em `_test`. Consulte `server/src/testing/testApp.ts`. O teste `solicitacao.admin.http.test.ts` usa repositories simulados e não comprova persistência MySQL.
 
-## Estrutura raiz
+Esta entrega não altera migrations. Novas mudanças de schema devem entrar em uma nova migration (próxima: 006), preservando as já aplicadas.
 
-```text
-UniCheck/
-├── client/                     # React, Vite e telas do protótipo
-├── server/                     # API Express e persistência JSON atual
-├── docs/                       # documentação técnica
-├── controle_emprestimos.sql    # modelo MySQL planejado
-├── agents.md                   # guia operacional
-└── README.md                   # apresentação resumida
-```
+## Próximos módulos
 
-## Front-end atual
-
-```text
-client/src/
-├── components/                 # telas e componentes compartilhados
-├── modules/                    # módulos visuais e dados mockados
-├── services/                   # fronteira de comunicação HTTP
-├── App.tsx                     # composição, navegação e sessão demonstrativa
-└── styles.css                  # estilos globais
-```
-
-`client/src/services/api.ts` concentra o suporte HTTP existente e usa `VITE_API_URL`. O dashboard pode escolher API quando `VITE_DATA_SOURCE=api`, e as duas telas de consulta usam API autenticada. A integração das mutações e dos módulos administrativos permanece pendente.
-
-## Back-end atual
-
-```text
-server/src/
-├── app.ts                      # Express, CORS, rotas e erros
-├── server.ts                   # entrada HTTP e job de atrasos
-├── config.ts                   # PORT, CORS_ORIGIN, DATA_FILE e JWT
-├── database/
-│   ├── jsonDatabase.ts          # leitura e escrita do JSON
-│   └── types.ts
-├── middlewares/                # autenticação, validação e erros
-├── modules/                    # regras por domínio
-├── routes/                     # registro das rotas
-└── jobs/                       # processamento de atrasos
-```
-
-Os módulos seguem a divisão de responsabilidades entre rotas, controllers, services, repositories e validações. No estado atual, essa divisão opera sobre JSON; a substituição por MySQL exige decisão de contrato, migrations, repositories SQL, seed e testes de integração antes de ser considerada concluída.
-
-## Regras de domínio planejadas
-
-As regras abaixo são a referência para a futura integração do sistema. Elas não comprovam que todas já estejam integradas às telas demonstrativas.
-
-- Professor solicita materiais; aluno autorizado solicita chaves vinculadas a projeto e professor.
-- Coordenador aprova ou recusa cada item, e a recusa exige motivo.
-- Retirada exige aceite do termo; retirada e devolução presenciais registram responsável e horários reais.
-- Chaves registram a unidade física entregue e seu tipo, primária ou secundária.
-- Materiais e chaves são inativados, não excluídos quando há histórico.
-- Itens não devolvidos até 22:40 devem gerar ocorrência de atraso.
-
-## Configuração e comandos atuais
-
-Use `server/.env.example` e `client/.env.example` sem versionar arquivos `.env` ou segredos. O servidor lê `PORT`, `CORS_ORIGIN`, `DATA_FILE` e `JWT_SECRET`; o client usa `VITE_DATA_SOURCE` e `VITE_API_URL`.
-
-Na raiz de `UniCheck/`:
-
-```powershell
-npm.cmd run dev:client
-npm.cmd run dev:server
-npm.cmd run test
-npm.cmd run lint
-npm.cmd run format
-npm.cmd run build --workspace=@unicheck/client
-npm.cmd run build --workspace=@unicheck/server
-npm.cmd run db:reset --workspace=@unicheck/server
-```
-
-`db:reset` restaura o JSON local a partir de `db.seed.json`. Não execute `migrate` como setup do protótipo enquanto `runMigrations.ts` não existir e a migração MySQL não for implementada.
-
-## Próximos marcos
-
-1. Aprovar o contrato de API e integrar autenticação, sessão e telas ao servidor.
-2. Planejar a migração MySQL com migrations, repositories, seed e testes de integração.
-3. Validar concorrência, autorização e persistência antes de tratar o sistema como pronto para ambiente multiusuário ou produção.
+Retirada, devolução, histórico, cadastros administrativos e autorizações ainda precisam ser integrados às telas. Verificar os requisitos antes de implementar cancelamento pelo aluno. Consulte `GUIA_COORDENACAO.md` para instalar e testar esta etapa.
