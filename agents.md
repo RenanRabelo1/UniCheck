@@ -7,17 +7,16 @@ O UniCheck é um sistema web para o controle de empréstimos de materiais e chav
 Arquitetura atual:
 
 ```text
-React/Vite (client/) -> API REST Express (server/) -> JSON local
+React/Vite (client/) -> API REST Express (server/) -> MySQL
 ```
 
-MySQL é o modelo planejado, representado por `controle_emprestimos.sql` e pelos diagramas do diretório-pai, mas não é a persistência em uso no runtime atual.
+MySQL é a persistência atual: conexão, migrations 001–005 e repositories SQL estão implementados. Os testes de integração exigem MySQL local.
 
 ## Tech stack
 
 - **Frontend:** React, TypeScript, Vite, React Hook Form e Zod.
 - **Backend:** Node.js, TypeScript, Express, Zod, Helmet, CORS, bcrypt e JWT.
-- **Persistência atual:** `server/data/db.json`, acessado por `server/src/database/jsonDatabase.ts`.
-- **Persistência planejada:** MySQL 8 com `mysql2`; conexão, migrations e repositories SQL ainda não existem.
+- **Persistência atual:** MySQL 8.0.16+ com `mysql2`; conexão e migrations em `server/src/database/`, acesso via repositories.
 - **Testes:** Vitest; Testing Library no client e Supertest no server.
 - **Monorepo:** npm workspaces (`client/` e `server/`), com lockfile somente na raiz.
 
@@ -34,10 +33,13 @@ npm run lint
 npm run format
 npm run build --workspace=@unicheck/client
 npm run build --workspace=@unicheck/server
-npm run db:reset --workspace=@unicheck/server
+npm run migrate --workspace=@unicheck/server
+npm run db:check --workspace=@unicheck/server
+# Somente para inicializar/repor dados de demonstração:
+npm run db:seed --workspace=@unicheck/server
 ```
 
-Não use `npm run migrate --workspace=@unicheck/server`: o script referencia `src/database/runMigrations.ts`, arquivo inexistente.
+Não edite migrations já aplicadas; adicione a próxima numeração (006 nesta versão). Não reaplique seed para uma simples atualização de código.
 
 ## Arquitetura e diretrizes de código
 
@@ -45,9 +47,9 @@ Não use `npm run migrate --workspace=@unicheck/server`: o script referencia `sr
 - **Server:** rotas e controllers tratam HTTP; services aplicam regras de negócio; repositories são a única camada que lê ou grava dados.
 - **Validação:** valide dados externos com Zod no servidor. A validação do client melhora UX, mas não substitui a validação da API.
 - **Tipagem:** TypeScript estrito; não introduza `any` sem justificativa concreta.
-- **Persistência:** enquanto o protótipo usar JSON, altere os repositories ativos e preserve o contrato dos dados. Não escreva SQL em controllers nem declare MySQL integrado sem conexão e testes reais.
+- **Persistência:** altere os repositories SQL ativos e preserve o contrato dos dados. Não escreva SQL em controllers. Não declare testes de persistência executados sem MySQL real.
 - **Integração do client:** `VITE_DATA_SOURCE=mock` mantém o modo visual; `VITE_DATA_SOURCE=api` habilita os serviços que já suportam a API. Mocks devem permanecer explícitos e isolados.
-- **Concorrência:** ao migrar para MySQL, aprovação/reserva, retirada e devolução precisam de transação e bloqueio para impedir disponibilidade dupla.
+- **Concorrência:** em MySQL, aprovação/reserva, retirada e devolução precisam de transação e bloqueio para impedir disponibilidade dupla.
 
 ## Regras de domínio
 
@@ -68,8 +70,8 @@ PENDENTE -> RECUSADO
 ## Arquivos protegidos e restrições
 
 - Não versionar `.env`, senhas, tokens, dados reais nem dumps de produção.
-- Use `server/.env.example` e `client/.env.example` como referência. No servidor, as variáveis ativas são `PORT`, `CORS_ORIGIN`, `DATA_FILE` e `JWT_SECRET`; no client, `VITE_DATA_SOURCE` e `VITE_API_URL`.
-- Não editar `server/data/db.json` para mascarar comportamento de aplicação; use `db:reset` para restaurar o seed local quando necessário.
+- Use `server/.env.example` e `client/.env.example` como referência. No servidor, as variáveis ativas são `PORT`, `CORS_ORIGIN`, `JWT_SECRET`, `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` e `DB_NAME`; no client, `VITE_DATA_SOURCE` e `VITE_API_URL`.
+- Não altere dados manualmente para mascarar comportamento. Use um banco isolado terminado em `_test` para testes destrutivos.
 - Não alterar PKs, FKs, enums ou regras do MER sem atualizar o SQL, diagramas, validações, services e testes no mesmo escopo.
 - Não apagar histórico de empréstimos nem contornar as regras de autorização.
 - Não use `git reset --hard`, `git checkout --` ou remoções para resolver conflitos sem autorização explícita.
@@ -85,7 +87,7 @@ Antes de mudar regras ou contratos, consulte nesta ordem:
 4. `../MER-CCT-Controle-de-Emprestimos.drawio` e `../DER-CCT-Controle-de-Emprestimos.drawio`.
 5. `.specs/codebase/STACK.md`, `ARCHITECTURE.md`, `CONVENTIONS.md`, `TESTING.md` e `CONCERNS.md`.
 
-Se houver divergência, registre a decisão em vez de alterar silenciosamente. A divergência atual — MySQL planejado versus JSON em runtime — deve permanecer explícita até uma migração validada.
+Se houver divergência, registre a decisão em vez de alterar silenciosamente. A documentação antiga de JSON foi corrigida após inspeção da migração MySQL recebida da equipe.
 
 ## Verificação e Git
 
@@ -97,8 +99,6 @@ Se houver divergência, registre a decisão em vez de alterar silenciosamente. A
 
 ## Para registrar
 
-**Contexto:** Guia operacional precisava refletir o código, não apenas a arquitetura planejada.
-**Decisão:** Tratar JSON como persistência vigente e MySQL como migração futura não implementada.
-**Justificativa:** Os repositories ativos usam `jsonDatabase.ts` e o script de migration aponta para arquivo inexistente.
-**Trade-offs aceitos:** O documento não assume garantias transacionais de MySQL no protótipo atual.
-**Revisar em:** Quando conexão MySQL, migrations e repositories SQL estiverem implementados e testados.
+**Contexto:** A equipe substituiu JSON por MySQL; o guia ainda descrevia a versão antiga.
+**Decisão:** Documentar a conexão e os repositories atuais e distinguir telas integradas de mocks.
+**Validação:** Consulte `docs/GUIA_COORDENACAO.md` para resultados e limitações desta entrega. Não confundir testes de contrato HTTP simulados com integração MySQL.

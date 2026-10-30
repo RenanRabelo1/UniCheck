@@ -1,0 +1,23 @@
+Arquivos novos ou alterados em relação ao ZIP atualizado recebido.
+Copie preservando estes caminhos relativos à raiz do projeto.
+
+agents.md
+client/src/App.test.tsx
+client/src/app/AdminWorkspace.tsx
+client/src/app/AppShell.tsx
+client/src/modules/admin/requests-api/PendingRequestsApi.tsx
+client/src/modules/admin/requests-api/RequestAnalysisApi.tsx
+client/src/modules/admin/requests-api/format.ts
+client/src/modules/admin/requests-api/requestsApi.css
+client/src/modules/admin/requests-api/requestsApi.test.tsx
+client/src/services/adminRequests.ts
+client/src/services/requests.ts
+docs/ESTRUTURA_DO_PROJETO.md
+docs/GUIA_COORDENACAO.md
+docs/GUIA_DUAS_TELAS.md
+server/src/modules/solicitacoes/solicitacao.admin.controller.ts
+server/src/modules/solicitacoes/solicitacao.admin.http.test.ts
+server/src/modules/solicitacoes/solicitacao.admin.routes.ts
+server/src/modules/solicitacoes/solicitacao.admin.service.ts
+server/src/modules/solicitacoes/solicitacao.admin.test.ts
+docs/ARQUIVOS_ALTERADOS_COORDENACAO.txt

@@ -1,0 +1,75 @@
+.admin-api-button {
+  border: 1px solid #bdccdc;
+  border-radius: 8px;
+  padding: 10px 16px;
+  background: #fff;
+  color: #0b3568;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.admin-requests-api button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.admin-requests-api button:focus-visible {
+  outline: 3px solid #448bd1;
+  outline-offset: 3px;
+}
+.admin-requests-api .pending-request-card dd {
+  overflow-wrap: anywhere;
+}
+.admin-api-error,
+.admin-api-success {
+  padding: 16px;
+  border-radius: 8px;
+}
+.admin-api-error {
+  background: #fff0ef;
+  color: #86241d;
+}
+.admin-api-success {
+  background: #eaf7ef;
+  color: #176036;
+}
+.admin-api-refusal {
+  margin-top: 16px;
+}
+.admin-api-refusal > button {
+  margin: 12px 8px 0 0;
+}
+.admin-requests-api .pending-requests__filters {
+  grid-template-columns:
+    minmax(15rem, 2fr) minmax(10rem, 1fr) minmax(8rem, 1fr)
+    auto;
+}
+.admin-requests-api .pending-request-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.admin-requests-api .pending-request-card > :not(button) {
+  grid-column: 1;
+}
+.admin-requests-api .pending-request-card > button {
+  grid-column: 2;
+  grid-row: 1 / 5;
+}
+.admin-requests-api .request-analysis__metadata dd {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+@media (max-width: 900px) {
+  .admin-requests-api .pending-requests__filters {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .admin-requests-api .pending-requests__filters,
+  .admin-requests-api .pending-request-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-requests-api .pending-request-card > button {
+    grid-column: 1;
+    grid-row: auto;
+    white-space: normal;
+  }
+}
