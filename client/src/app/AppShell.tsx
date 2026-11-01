@@ -1,3 +1,5 @@
+import { CheckoutOperationsApi } from "../modules/admin/operations-api/CheckoutOperationsApi";
+import { ReturnOperationsApi } from "../modules/admin/operations-api/ReturnOperationsApi";
 import { PendingRequestsApi } from "../modules/admin/requests-api/PendingRequestsApi";
 import { RequestAnalysisApi } from "../modules/admin/requests-api/RequestAnalysisApi";
 import { isApiMode } from "../services/api";
@@ -133,14 +135,18 @@ export function AppShell() {
           );
           break;
         case "admin-checkout":
-          screen = (
+          screen = isApiMode() ? (
+            <CheckoutOperationsApi />
+          ) : (
             <CheckoutOperations
               onCheckoutConfirmed={() => goToAdminView("admin-return")}
             />
           );
           break;
         case "admin-return":
-          screen = (
+          screen = isApiMode() ? (
+            <ReturnOperationsApi />
+          ) : (
             <ReturnOperations
               onReturnConfirmed={() => goToAdminView("admin-alerts")}
             />

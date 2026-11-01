@@ -69,3 +69,13 @@ export async function decideAdminItem(
     ),
   );
 }
+
+/** Fila completa da secretaria; as telas de retirada e devolução filtram por situação do item. */
+export async function listAdminRequests(
+  signal?: AbortSignal,
+): Promise<AdminRequest[]> {
+  return parse(
+    z.array(adminRequestSchema),
+    await getJson("/admin/solicitacoes", token(), signal),
+  );
+}
