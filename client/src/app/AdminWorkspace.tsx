@@ -33,7 +33,10 @@ export function AdminWorkspace({
   children,
 }: AdminWorkspaceProps) {
   const connected =
-    isApiMode() && ["admin-pending", "admin-analysis"].includes(activeView);
+    isApiMode() &&
+    ["admin-pending", "admin-analysis", "admin-checkout", "admin-return"].includes(
+      activeView,
+    );
   return (
     <div className="admin-workspace">
       <header className="admin-workspace__header">
@@ -52,7 +55,7 @@ export function AdminWorkspace({
         </div>
         <span>
           {connected ? (
-            "Pedidos reais · Os pareceres são salvos no sistema."
+            "Pedidos reais · As alterações são salvas no sistema."
           ) : (
             <>
               {selectedRequestId
