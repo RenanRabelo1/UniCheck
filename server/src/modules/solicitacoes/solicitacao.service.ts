@@ -3,6 +3,7 @@ import type { ItemSolicitacao, Sala, TipoChave, TipoItem, Usuario } from '../../
 import { HttpError } from '../../middlewares/httpError.js'
 import { todayIso } from '../../utils/dates.js'
 import { chaveRepository } from '../chaves/chave.repository.js'
+import { detalheExibido } from '../materiais/material.mapper.js'
 import { materialRepository } from '../materiais/material.repository.js'
 import { toRequester } from '../usuarios/usuario.mapper.js'
 import { usuarioRepository } from '../usuarios/usuario.repository.js'
@@ -66,7 +67,7 @@ async function resolverItem(
       tipo,
       referenciaId: material.id,
       nome: material.nome,
-      detalhe: material.detalhe,
+      detalhe: detalheExibido(material),
       quantidade: quantity,
       capacidade: material.quantidadeTotal,
     }
@@ -115,7 +116,7 @@ export const solicitacaoService = {
         type: 'material' as const,
         id: material.id,
         name: material.nome,
-        detail: material.detalhe ?? null,
+        detail: detalheExibido(material) ?? null,
         roomId: null as string | null,
         total: material.quantidadeTotal,
         available: livre(material.quantidadeTotal, ocupadoMateriais.get(material.id)),

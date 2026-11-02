@@ -3,6 +3,7 @@ import { HttpError } from '../../middlewares/httpError.js'
 import { todayIso } from '../../utils/dates.js'
 import {
   comprometidoPorMaterial,
+  emPossePorMaterial,
   quantidadeComprometida,
   temItemEmAndamento,
 } from '../solicitacoes/solicitacao.disponibilidade.js'
@@ -15,24 +16,39 @@ const TRAVA_CADASTRO = 'unicheck:cadastro-material'
 
 export const materialService = {
   async list(filtro: { active?: 'true' | 'false' }, now: Date = new Date()) {
-    const [materiais, comprometidos] = await Promise.all([
+    const [materiais, comprometidos, emPosse] = await Promise.all([
       materialRepository.listAll(),
       comprometidoPorMaterial(todayIso(now)),
+      emPossePorMaterial(),
     ])
 
     return materiais
       .filter((material) => filtro.active === undefined || material.ativo === (filtro.active === 'true'))
-      .map((material) => toMaterialView(material, comprometidos.get(material.id) ?? 0))
+      .map((material) => toMaterialView(material, comprometidos.get(material.id) ?? 0, emPosse.get(material.id) ?? 0))
   },
 
   async create(input: CreateMaterialInput) {
     const detalhe = input.detail || undefined
+    const patrimonio = input.patrimony || undefined
 
     const material = await withTransaction(async (connection) => {
-      if (await materialRepository.sameExists(input.name, detalhe, undefined, connection)) {
+      if (patrimonio && (await materialRepository.patrimonioExists(patrimonio, undefined, connection))) {
+        throw new HttpError(409, 'Já existe um material com este patrimônio.')
+      }
+      if (await materialRepository.sameExists(input.name, detalhe, patrimonio, undefined, connection)) {
         throw new HttpError(409, 'Já existe um material com este nome e detalhe.')
       }
-      return materialRepository.create({ nome: input.name, detalhe, quantidadeTotal: input.totalQuantity }, connection)
+      return materialRepository.create(
+        {
+          nome: input.name,
+          categoria: input.category,
+          controle: input.control === 'individual' ? 'INDIVIDUAL' : 'QUANTIDADE',
+          patrimonio,
+          detalhe,
+          quantidadeTotal: input.totalQuantity,
+        },
+        connection,
+      )
     }, TRAVA_CADASTRO)
 
     return toMaterialView(material, 0)
@@ -45,8 +61,22 @@ export const materialService = {
 
       const nome = input.name ?? material.nome
       const detalhe = input.detail === undefined ? material.detalhe : input.detail || undefined
+      const patrimonio = input.patrimony === undefined ? material.patrimonio : input.patrimony || undefined
 
-      if (await materialRepository.sameExists(nome, detalhe, id, connection)) {
+      // O controle não muda depois do cadastro: mudar reinterpretaria o histórico do material.
+      if (material.controle === 'INDIVIDUAL') {
+        if (!patrimonio) throw new HttpError(400, 'Informe o patrimônio do material individual.')
+        if (input.totalQuantity !== undefined && input.totalQuantity !== 1) {
+          throw new HttpError(400, 'Material individual tem uma única unidade.')
+        }
+      } else if (patrimonio) {
+        throw new HttpError(400, 'Material por quantidade não tem patrimônio.')
+      }
+      if (patrimonio && (await materialRepository.patrimonioExists(patrimonio, id, connection))) {
+        throw new HttpError(409, 'Já existe um material com este patrimônio.')
+      }
+
+      if (await materialRepository.sameExists(nome, detalhe, patrimonio, id, connection)) {
         throw new HttpError(409, 'Já existe um material com este nome e detalhe.')
       }
 
@@ -63,12 +93,15 @@ export const materialService = {
 
       const atualizado = {
         nome,
+        categoria: input.category ?? material.categoria,
+        patrimonio,
         detalhe,
         quantidadeTotal: input.totalQuantity ?? material.quantidadeTotal,
         ativo: input.active ?? material.ativo,
       }
       await materialRepository.update(id, atualizado, connection)
-      return toMaterialView({ id, ...atualizado }, comprometida)
+      const emPosse = await emPossePorMaterial(connection)
+      return toMaterialView({ id, controle: material.controle, ...atualizado }, comprometida, emPosse.get(id) ?? 0)
     }, TRAVA_CADASTRO)
   },
 }

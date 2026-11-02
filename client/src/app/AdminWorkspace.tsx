@@ -24,6 +24,18 @@ const adminViews: Array<{ view: AdminView; label: string }> = [
   { view: "admin-history", label: "Histórico" },
 ];
 
+const connectedViews: AdminView[] = [
+  "admin-pending",
+  "admin-analysis",
+  "admin-checkout",
+  "admin-return",
+  "admin-alerts",
+  "admin-rooms-keys",
+  "admin-materials",
+  "admin-history",
+  "admin-authorizations",
+];
+
 /** Identifica quais módulos já persistem as alterações. */
 export function AdminWorkspace({
   activeView,
@@ -32,11 +44,7 @@ export function AdminWorkspace({
   selectedRequestId,
   children,
 }: AdminWorkspaceProps) {
-  const connected =
-    isApiMode() &&
-    ["admin-pending", "admin-analysis", "admin-checkout", "admin-return"].includes(
-      activeView,
-    );
+  const connected = isApiMode() && connectedViews.includes(activeView);
   return (
     <div className="admin-workspace">
       <header className="admin-workspace__header">
@@ -50,12 +58,12 @@ export function AdminWorkspace({
           </button>
           <p>
             Secretaria CCT ·{" "}
-            {connected ? "Solicitações" : "ambiente demonstrativo"}
+            {connected ? "dados reais" : "ambiente demonstrativo"}
           </p>
         </div>
         <span>
           {connected ? (
-            "Pedidos reais · As alterações são salvas no sistema."
+            "As alterações são salvas no sistema."
           ) : (
             <>
               {selectedRequestId

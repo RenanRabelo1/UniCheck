@@ -32,6 +32,29 @@ describe('verificação de atrasos (22:40)', () => {
     expect(painel.body.recentActivity.some((item: { status: string }) => item.status === 'Em atraso')).toBe(true)
   })
 
+  it('o alerta traz responsável, item, sala da chave e horários (RF19.5 a RF19.12)', async () => {
+    const ctx = await start('2026-10-05T22:41:00-03:00')
+    await verificar(ctx)
+
+    const { body } = await request(ctx.app).get('/alertas').set('Authorization', ctx.coord)
+    const chave = body.find((alerta: { itemId: string }) => alerta.itemId === '1008')
+    expect(chave).toMatchObject({
+      protocol: 'CCT-2026-01005',
+      requester: 'Lucas Almeida',
+      registration: '2412001',
+      contact: null,
+      itemType: 'key',
+      room: 'J-201',
+      keyType: 'Primária',
+      dueDate: '2026-10-05',
+      dueTime: '18:00',
+    })
+    expect(chave.withdrawnAt).toContain('2026-10-05T10:20')
+
+    const material = body.find((alerta: { itemId: string }) => alerta.itemId === '1004')
+    expect(material).toMatchObject({ itemType: 'material', room: null, keyType: null })
+  })
+
   it('devolver o item resolve o alerta dele', async () => {
     const ctx = await start('2026-10-05T22:41:00-03:00')
     await verificar(ctx)

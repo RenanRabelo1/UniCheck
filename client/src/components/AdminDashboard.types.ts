@@ -16,10 +16,12 @@ export type AdminAction =
   | "requests"
   | "operations"
   | "inventory"
+  | "rooms-keys"
+  | "alerts"
   | "refresh";
 
 export type AdminMetric = {
-  id: "pending" | "approved" | "checked-out" | "returns";
+  id: "pending" | "approved" | "checked-out" | "returns" | "alerts";
   label: string;
   value: number;
   badge: string;
@@ -44,7 +46,20 @@ export type AdminMovement = {
   itemKind: "key" | "equipment" | "material";
   date: string;
   time: string;
-  status: "Pendente" | "Aprovada" | "Em uso" | "Devolvida";
+  /** Código exibido; sem ele, a tela mostra o id. */
+  protocol?: string;
+  status: string;
+};
+
+/** Dados reais do painel. Sem eles, a tela fica no modo demonstrativo. */
+export type AdminDashboardLive = {
+  metrics: AdminMetric[];
+  quickActions: AdminQuickAction[];
+  movements: AdminMovement[];
+  dateLabel: string;
+  loading: boolean;
+  error?: string;
+  onRefresh: () => void;
 };
 
 export type AdminDashboardDemoCopy = {

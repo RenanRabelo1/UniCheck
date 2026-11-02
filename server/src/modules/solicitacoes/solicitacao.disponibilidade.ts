@@ -2,7 +2,7 @@ import type { RowDataPacket } from 'mysql2/promise'
 import { pool } from '../../database/connection.js'
 import { parseId, type Db } from '../../database/sql.js'
 import type { TipoItem } from '../../database/types.js'
-import { STATUS_QUE_OCUPAM } from './solicitacao.status.js'
+import { STATUS_EM_POSSE, STATUS_QUE_OCUPAM } from './solicitacao.status.js'
 
 export type Janela = {
   /** AAAA-MM-DD */
@@ -83,6 +83,17 @@ export async function comprometidoPorMaterial(aPartirDe: string, db: Db = pool):
      WHERE i.id_material IS NOT NULL AND i.status_item IN (${OCUPAM}) AND s.data_utilizacao >= ?
      GROUP BY i.id_material`,
     [aPartirDe],
+  )
+  return new Map(rows.map((row) => [String(row.ref), Number(row.total)]))
+}
+
+/** Unidades de cada material que estão fora agora (retiradas ou em atraso): id do material -> quantidade. */
+export async function emPossePorMaterial(db: Db = pool): Promise<Map<string, number>> {
+  const emPosse = STATUS_EM_POSSE.map((status) => `'${status}'`).join(', ')
+  const [rows] = await db.query<(RowDataPacket & { ref: number; total: string })[]>(
+    `SELECT id_material AS ref, SUM(quantidade_solicitada) AS total FROM item_solicitado
+     WHERE id_material IS NOT NULL AND status_item IN (${emPosse})
+     GROUP BY id_material`,
   )
   return new Map(rows.map((row) => [String(row.ref), Number(row.total)]))
 }

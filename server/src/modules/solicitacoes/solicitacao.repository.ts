@@ -5,6 +5,7 @@ import { parseId, toHm, type Db } from '../../database/sql.js'
 import type { ItemSolicitacao, Sala, Solicitacao, StatusItem, TipoItem } from '../../database/types.js'
 import { fromDbDateTime, toDbDateTime } from '../../utils/dates.js'
 import { chaveRepository } from '../chaves/chave.repository.js'
+import { STATUS_EM_POSSE } from './solicitacao.status.js'
 
 export type ItemDoUsuario = ItemSolicitacao & {
   solicitacaoId: string
@@ -119,6 +120,27 @@ export type NovaSolicitacao = {
 export const solicitacaoRepository = {
   async listAll(db: Db = pool): Promise<Solicitacao[]> {
     return carregar(db, '', [])
+  },
+
+  /** Quantos itens existem em cada status, para o painel da Coordenação. */
+  async contarItensPorStatus(db: Db = pool): Promise<Map<StatusItem, number>> {
+    const [rows] = await db.query<(RowDataPacket & { status_item: StatusItem; total: number })[]>(
+      'SELECT status_item, COUNT(*) AS total FROM item_solicitado GROUP BY status_item',
+    )
+    return new Map(rows.map((row) => [row.status_item, Number(row.total)]))
+  },
+
+  /** Itens em posse cujo horário previsto de devolução já passou. */
+  async contarDevolucoesVencidas(hoje: string, hora: string, db: Db = pool): Promise<number> {
+    const emPosse = STATUS_EM_POSSE.map((status) => `'${status}'`).join(', ')
+    const [rows] = await db.query<(RowDataPacket & { total: number })[]>(
+      `SELECT COUNT(*) AS total FROM item_solicitado i
+       JOIN solicitacao s ON s.id_solicitacao = i.id_solicitacao
+       WHERE i.status_item IN (${emPosse})
+         AND (s.data_utilizacao < ? OR (s.data_utilizacao = ? AND s.hora_devolucao_prevista <= ?))`,
+      [hoje, hoje, `${hora}:00`],
+    )
+    return Number(rows[0]?.total ?? 0)
   },
 
   /** Solicitações do usuário, da mais recente para a mais antiga. */

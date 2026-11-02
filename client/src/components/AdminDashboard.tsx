@@ -8,6 +8,7 @@ import {
 } from "./AdminDashboard.mock";
 import type {
   AdminAction,
+  AdminDashboardLive,
   AdminIconName,
   AdminMetric,
   AdminSession,
@@ -20,6 +21,8 @@ export type AdminDashboardProps = {
   onAction?: (action: AdminAction) => void;
   onSearch?: (query: string) => void;
   onViewRequest?: (requestId: string) => void;
+  /** Dados da API. Ausente no modo mock, em que a tela é demonstrativa. */
+  live?: AdminDashboardLive;
 };
 
 const navigation: {
@@ -31,9 +34,11 @@ const navigation: {
   { label: "Painel administrativo", icon: "dashboard", active: true },
   { label: "Solicitações", icon: "pending", action: "requests" },
   { label: "Retiradas e devoluções", icon: "swap", action: "operations" },
-  { label: "Materiais e chaves", icon: "inventory", action: "inventory" },
+  { label: "Alertas de atraso", icon: "alert", action: "alerts" },
+  { label: "Materiais", icon: "inventory", action: "inventory" },
+  { label: "Salas e chaves", icon: "key", action: "rooms-keys" },
   { label: "Usuários autorizados", icon: "badge", action: "authorized-users" },
-  { label: "Relatórios", icon: "analytics", action: "reports" },
+  { label: "Histórico", icon: "analytics", action: "reports" },
 ];
 
 const metricActions: Record<AdminMetric["id"], AdminAction> = {
@@ -41,6 +46,7 @@ const metricActions: Record<AdminMetric["id"], AdminAction> = {
   approved: "operations",
   "checked-out": "operations",
   returns: "register-return",
+  alerts: "alerts",
 };
 
 const iconPaths: Record<AdminIconName, React.ReactNode> = {
@@ -154,6 +160,17 @@ const iconPaths: Record<AdminIconName, React.ReactNode> = {
   ),
 };
 
+/** Situações reais sem cor própria usam a mais próxima das quatro já desenhadas. */
+function statusClass(status: string) {
+  const known: Record<string, string> = {
+    "Em posse": "em-uso",
+    "Em atraso": "pendente",
+    Finalizada: "devolvida",
+    Recusada: "devolvida",
+  };
+  return known[status] ?? status.toLowerCase().replace(" ", "-");
+}
+
 function Icon({ name, size = 20 }: { name: AdminIconName; size?: number }) {
   return (
     <svg
@@ -178,6 +195,7 @@ export function AdminDashboard({
   onAction,
   onSearch,
   onViewRequest,
+  live,
 }: AdminDashboardProps) {
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -186,8 +204,17 @@ export function AdminDashboard({
   );
   const location = session.location ?? "Secretaria CCT J-02";
 
+  const metrics = live?.metrics ?? adminMetricsMock;
+  const quickActions = live?.quickActions ?? adminQuickActionsMock;
+  const movements = live?.movements ?? adminMovementsMock;
+
   function runAction(action?: AdminAction) {
     setMenuOpen(false);
+    if (live) {
+      if (action === "refresh") live.onRefresh();
+      else if (action) onAction?.(action);
+      return;
+    }
     if (!action) {
       setDemoFeedback("Você já está no painel administrativo demonstrativo.");
       return;
@@ -216,6 +243,10 @@ export function AdminDashboard({
   }
 
   function viewRequest(requestId: string) {
+    if (live) {
+      onViewRequest?.(requestId);
+      return;
+    }
     setDemoFeedback(
       `Demonstração: os detalhes de ${requestId} seriam exibidos. A solicitação continua sem qualquer alteração.`,
     );
@@ -243,9 +274,11 @@ export function AdminDashboard({
           </div>
         </div>
         <div className="admin-header-actions">
-          <span className="admin-service-status">
-            <i /> Atendimento presencial ativo
-          </span>
+          {!live && (
+            <span className="admin-service-status">
+              <i /> Atendimento presencial ativo
+            </span>
+          )}
           <div className="admin-profile">
             <span className="admin-avatar">
               <Icon name="user" size={17} />
@@ -293,11 +326,13 @@ export function AdminDashboard({
             ))}
           </nav>
         </div>
-        <div className="admin-contact">
-          <strong>ⓘ Secretaria Bloco J-02</strong>
-          <span>Ramal: 3477-3120</span>
-          <span>Atendimento: 07h30 às 21h00</span>
-        </div>
+        {!live && (
+          <div className="admin-contact">
+            <strong>ⓘ Secretaria Bloco J-02</strong>
+            <span>Ramal: 3477-3120</span>
+            <span>Atendimento: 07h30 às 21h00</span>
+          </div>
+        )}
       </aside>
 
       <main className="admin-main">
@@ -308,15 +343,17 @@ export function AdminDashboard({
             </p>
             <h1>Painel administrativo</h1>
             <span>
-              Acompanhe as movimentações e as pendências da secretaria em tempo
-              real.
+              Acompanhe as movimentações e as pendências da secretaria
+              {live ? "." : " em tempo real."}
             </span>
           </div>
           <div className="admin-date">
             <Icon name="calendar" />
             <div>
-              <strong>{adminDashboardDemoCopy.dateLabel}</strong>
-              <small>{adminDashboardDemoCopy.shiftLabel}</small>
+              <strong>
+                {live?.dateLabel ?? adminDashboardDemoCopy.dateLabel}
+              </strong>
+              {!live && <small>{adminDashboardDemoCopy.shiftLabel}</small>}
             </div>
             <button
               type="button"
@@ -329,60 +366,73 @@ export function AdminDashboard({
           </div>
         </section>
 
-        <form className="admin-scanner" role="search" onSubmit={submitSearch}>
-          <span className="admin-scanner-icon">
-            <Icon name="scanner" size={23} />
-          </span>
-          <label htmlFor="admin-counter-search" className="sr-only">
-            Buscar matrícula, patrimônio, protocolo ou chave
-          </label>
-          <div className="admin-search-field">
-            <Icon name="search" size={18} />
-            <input
-              id="admin-counter-search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Leitor de crachá ou patrimônio: digite a matrícula, protocolo ou código da chave..."
-            />
-          </div>
-          <span className="admin-reader-label">Leitor USB/Bluetooth:</span>
-          <span className="admin-reader-ready">
-            <i /> Pronto para leitura
-          </span>
-        </form>
+        {!live && (
+          <form className="admin-scanner" role="search" onSubmit={submitSearch}>
+            <span className="admin-scanner-icon">
+              <Icon name="scanner" size={23} />
+            </span>
+            <label htmlFor="admin-counter-search" className="sr-only">
+              Buscar matrícula, patrimônio, protocolo ou chave
+            </label>
+            <div className="admin-search-field">
+              <Icon name="search" size={18} />
+              <input
+                id="admin-counter-search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Leitor de crachá ou patrimônio: digite a matrícula, protocolo ou código da chave..."
+              />
+            </div>
+            <span className="admin-reader-label">Leitor USB/Bluetooth:</span>
+            <span className="admin-reader-ready">
+              <i /> Pronto para leitura
+            </span>
+          </form>
+        )}
 
-        <p className="admin-demo-notice" role="status" aria-live="polite">
-          <Icon name="alert" size={17} />
-          <span>{demoFeedback}</span>
-        </p>
+        {!live && (
+          <p className="admin-demo-notice" role="status" aria-live="polite">
+            <Icon name="alert" size={17} />
+            <span>{demoFeedback}</span>
+          </p>
+        )}
+        {live?.loading && <p role="status">Carregando painel…</p>}
+        {live?.error && (
+          <p className="admin-demo-notice" role="alert">
+            <Icon name="alert" size={17} />
+            <span>{live.error}</span>
+          </p>
+        )}
 
-        <section className="admin-metrics" aria-label="Resumo operacional">
-          {adminMetricsMock.map((metric) => (
-            <article
-              className={`admin-metric tone-${metric.tone}`}
-              key={metric.id}
-            >
-              <div className="admin-metric-title">
-                <span>{metric.label}</span>
-                <b>
-                  <Icon name={metric.icon} size={22} />
-                </b>
-              </div>
-              <div className="admin-metric-value">
-                <strong>{metric.value}</strong>
-                <small>{metric.badge}</small>
-              </div>
-              <p>{metric.description}</p>
-              <button
-                type="button"
-                onClick={() => runAction(metricActions[metric.id])}
+        {metrics.length > 0 && (
+          <section className="admin-metrics" aria-label="Resumo operacional">
+            {metrics.map((metric) => (
+              <article
+                className={`admin-metric tone-${metric.tone}`}
+                key={metric.id}
               >
-                {metric.footer}
-                <Icon name="chevron" size={16} />
-              </button>
-            </article>
-          ))}
-        </section>
+                <div className="admin-metric-title">
+                  <span>{metric.label}</span>
+                  <b>
+                    <Icon name={metric.icon} size={22} />
+                  </b>
+                </div>
+                <div className="admin-metric-value">
+                  <strong>{metric.value}</strong>
+                  {metric.badge && <small>{metric.badge}</small>}
+                </div>
+                <p>{metric.description}</p>
+                <button
+                  type="button"
+                  onClick={() => runAction(metricActions[metric.id])}
+                >
+                  {metric.footer}
+                  <Icon name="chevron" size={16} />
+                </button>
+              </article>
+            ))}
+          </section>
+        )}
 
         <section className="admin-section">
           <div className="admin-section-heading">
@@ -393,10 +443,10 @@ export function AdminDashboard({
                 atendimento presencial.
               </p>
             </div>
-            <span>{adminDashboardDemoCopy.activeFlowsLabel}</span>
+            {!live && <span>{adminDashboardDemoCopy.activeFlowsLabel}</span>}
           </div>
           <div className="admin-quick-grid">
-            {adminQuickActionsMock.map((action) => (
+            {quickActions.map((action) => (
               <button
                 type="button"
                 className="admin-quick-action"
@@ -421,9 +471,7 @@ export function AdminDashboard({
             <div className="admin-table-heading">
               <div>
                 <h2>Solicitações recentes</h2>
-                <p>
-                  Últimas movimentações registradas no sistema da secretaria.
-                </p>
+                <p>Últimas solicitações registradas no sistema.</p>
               </div>
               <button type="button" onClick={() => runAction("requests")}>
                 Ver todas
@@ -444,10 +492,12 @@ export function AdminDashboard({
                   </tr>
                 </thead>
                 <tbody>
-                  {adminMovementsMock.map((movement) => (
+                  {movements.map((movement) => (
                     <tr key={movement.id}>
                       <td data-label="Código">
-                        <strong className="admin-code">{movement.id}</strong>
+                        <strong className="admin-code">
+                          {movement.protocol ?? movement.id}
+                        </strong>
                       </td>
                       <td data-label="Solicitante">
                         <strong>{movement.requester}</strong>
@@ -460,7 +510,7 @@ export function AdminDashboard({
                       </td>
                       <td data-label="Situação">
                         <span
-                          className={`admin-status status-${movement.status.toLowerCase().replace(" ", "-")}`}
+                          className={`admin-status status-${statusClass(movement.status)}`}
                         >
                           {movement.status}
                         </span>
@@ -478,54 +528,58 @@ export function AdminDashboard({
                 </tbody>
               </table>
             </div>
-            <p className="admin-table-note">
-              {adminDashboardDemoCopy.activeRequestsLabel}
-            </p>
+            {!live && (
+              <p className="admin-table-note">
+                {adminDashboardDemoCopy.activeRequestsLabel}
+              </p>
+            )}
           </div>
 
-          <aside className="admin-side-stack">
-            <article className="admin-occupancy">
-              <div className="admin-side-title">
-                <h2>Ocupação do Bloco J</h2>
-                <i />
-              </div>
-              <div
-                className="admin-gauge"
-                role="img"
-                aria-label="72 por cento das salas com chave ativa"
-              >
-                <div>
-                  <strong>72%</strong>
-                  <span>Salas com chave ativa</span>
+          {!live && (
+            <aside className="admin-side-stack">
+              <article className="admin-occupancy">
+                <div className="admin-side-title">
+                  <h2>Ocupação do Bloco J</h2>
+                  <i />
                 </div>
-              </div>
-              <dl>
-                <div>
-                  <dt>Chaves de laboratório</dt>
-                  <dd>18 / 25 em uso</dd>
+                <div
+                  className="admin-gauge"
+                  role="img"
+                  aria-label="72 por cento das salas com chave ativa"
+                >
+                  <div>
+                    <strong>72%</strong>
+                    <span>Salas com chave ativa</span>
+                  </div>
                 </div>
-                <div>
-                  <dt>Projetores CCT</dt>
-                  <dd>6 / 10 em uso</dd>
-                </div>
-                <div>
-                  <dt>Adaptadores HDMI/USB-C</dt>
-                  <dd>12 / 12 (Esgotado)</dd>
-                </div>
-              </dl>
-            </article>
-            <article className="admin-protocol">
-              <strong>
-                <Icon name="check" size={19} /> Protocolo de balcão
-              </strong>
-              <p>
-                Toda entrega física deve ser acompanhada da conferência visual
-                da foto institucional no crachá do solicitante.
-              </p>
-              <span>Responsável: {session.name}</span>
-              <b>Guichê 01</b>
-            </article>
-          </aside>
+                <dl>
+                  <div>
+                    <dt>Chaves de laboratório</dt>
+                    <dd>18 / 25 em uso</dd>
+                  </div>
+                  <div>
+                    <dt>Projetores CCT</dt>
+                    <dd>6 / 10 em uso</dd>
+                  </div>
+                  <div>
+                    <dt>Adaptadores HDMI/USB-C</dt>
+                    <dd>12 / 12 (Esgotado)</dd>
+                  </div>
+                </dl>
+              </article>
+              <article className="admin-protocol">
+                <strong>
+                  <Icon name="check" size={19} /> Protocolo de balcão
+                </strong>
+                <p>
+                  Toda entrega física deve ser acompanhada da conferência visual
+                  da foto institucional no crachá do solicitante.
+                </p>
+                <span>Responsável: {session.name}</span>
+                <b>Guichê 01</b>
+              </article>
+            </aside>
+          )}
         </section>
       </main>
     </div>

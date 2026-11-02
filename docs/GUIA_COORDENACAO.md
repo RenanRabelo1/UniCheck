@@ -8,7 +8,7 @@ A fila permite busca por protocolo, solicitante, matrícula ou item, filtro por 
 
 Se houver falha ou conflito ao salvar, a tela pede uma atualização antes de tentar outra decisão. Isso evita reenviar sem saber se uma requisição foi gravada. O servidor existente controla permissões, disponibilidade e decisões concorrentes. A interface não inventa quantidade disponível, prioridade, telefone ou e-mail que a API não fornece.
 
-O modo `mock` mantém as demonstrações anteriores. Os indicadores/cards do painel administrativo e os outros módulos administrativos continuam demonstrativos. No modo API, os atalhos de pedidos do painel levam à fila real; IDs de exemplo não são usados para analisar pedidos reais.
+O modo `mock` mantém as demonstrações anteriores. No modo API, todas as telas administrativas usam dados reais: painel, pendências, análise, retirada, devolução, alertas, materiais, salas e chaves, autorizações e projetos, e histórico. Veja "Telas administrativas no modo API".
 
 ## Instalar no computador
 
@@ -34,7 +34,7 @@ npm.cmd run migrate --workspace=@unicheck/server
 npm.cmd run db:check --workspace=@unicheck/server
 ```
 
-Esta entrega não modifica o schema nem adiciona migration. Em um banco novo de desenvolvimento, carregue os exemplos com:
+A migration `006_trigger_autorizacao_completa.sql` precisa ser aplicada: ela troca os dois triggers de chave. Em um banco novo de desenvolvimento, carregue os exemplos com:
 
 ```powershell
 npm.cmd run db:seed --workspace=@unicheck/server
@@ -86,7 +86,39 @@ As contas abaixo são apenas do seed de demonstração, não a senha do seu MySQ
 
 Todas exigem token Bearer. Detalhe ausente retorna 404; sem autenticação 401; perfil sem permissão 403. A decisão existente valida motivo e impede nova decisão sobre item já analisado (409). O novo detalhe usa os mapeadores existentes, sem expor senha ou hash do usuário. Não foi necessário alterar migrations ou seed.
 
-## Verificações da entrega
+## Telas administrativas no modo API
+
+| Tela | Rotas | O que muda em relação ao mock |
+| --- | --- | --- |
+| 7. Painel | `GET /dashboard/admin` | Sem leitor de crachá, ocupação do Bloco J, guichê e números fixos. O menu ganhou Alertas e Salas e chaves. |
+| 12. Alertas | `GET /alertas?status=open\|resolved\|all` | Sem lembrete, exportação e leitor de código, que não têm back-end. "Registrar devolução" abre a Tela 11. |
+| 13. Materiais | `GET/POST /admin/materiais`, `PATCH /admin/materiais/:id` | Categoria, controle e patrimônio são gravados. Sem localização e descrição, que não existem no banco: use o detalhe. O controle não muda depois do cadastro. |
+| 14. Salas e chaves | `GET/POST /admin/salas`, `PATCH /admin/salas/:id`, `GET/POST /admin/chaves`, `PATCH /admin/chaves/:id` | A situação da chave vem do item em posse. O código é gerado pelo servidor e cada sala tem no máximo uma chave de cada tipo. |
+| 15. Autorizações | `GET/POST /admin/autorizacoes`, `PATCH /admin/autorizacoes/:id`, `GET /admin/autorizacoes/opcoes`, `GET/POST /admin/projetos`, `PATCH /admin/projetos/:id` | Aluno e professor são escolhidos entre usuários reais. Coordenador e data vêm do servidor. Sem edição e histórico por autorização: inative e crie outra. |
+| 16. Histórico | `GET /movimentacoes/historico?search=&material=&room=&status=&from=&to=` | Uma linha por item, inclusive sem movimentação. O período usa a data de utilização. Sem imprimir e exportar. |
+
+Escrita é exclusiva da coordenação, exceto retirada e devolução. Materiais, salas, chaves, projetos e autorizações só são inativados.
+
+### Autorização do aluno
+
+A chave só é liberada com autorização, projeto e professor ativos. A regra vale no login, nas opções, na criação do pedido e nos triggers. Ao revogar a autorização:
+
+- a chave em posse ainda pode ser devolvida e continua entrando na verificação das 22:40;
+- o pedido pendente não pode mais ser aprovado, apenas recusado com motivo.
+
+Antes da migration 006, o trigger de UPDATE disparava em qualquer alteração do item. Revogar a autorização travaria a devolução da chave e o job de atrasos.
+
+### Como testar
+
+1. Entre como coordenação: os indicadores devem bater com as telas de cada etapa.
+2. Em Materiais, cadastre um material individual com patrimônio. Como professor, confira o patrimônio em Nova solicitação.
+3. Em Salas e chaves, tente inativar uma chave em posse: o servidor recusa e a tela mostra o motivo.
+4. Em Autorizações, autorize um aluno e confira que as chaves são liberadas para ele. Inative o projeto e confira o bloqueio.
+5. Registre uma devolução e confira, no Histórico, quem decidiu, entregou e recebeu. Item que atrasou continua marcado com "Teve atraso".
+
+## Verificações da entrega de pendências e análise
+
+As contagens abaixo são daquela entrega. A integração das telas administrativas tem seus próprios resultados no Pull Request.
 
 - Front-end: **29 testes passaram** (incluindo 11 novos testes administrativos).
 - Novo contrato HTTP administrativo sem banco: **3 testes passaram**.
@@ -111,4 +143,14 @@ No GitHub Desktop, confira a branch e a lista de alterações. Não inclua `.env
 
 ## Fora desta etapa
 
-Retirada, devolução, histórico de movimentações, cadastros de materiais/chaves e autorizações pelo painel permanecem para as próximas integrações. A inclusão de pincel/extensão no seed e a decisão sobre cancelamento de pedidos também não fazem parte desta entrega.
+A inclusão de pincel/extensão no seed e a decisão sobre cancelamento de pedidos não fazem parte desta entrega.
+
+Continuam abertas, e as telas mostram os dados como estão:
+
+- `POST /auth/register` cria Coordenador para qualquer e-mail;
+- a mesma chave pode ser retirada duas vezes, porque a disponibilidade só compara a janela prevista na mesma data;
+- aluno, mesmo sem autorização, consegue pedir material;
+- `termo_responsabilidade` nunca é gravado;
+- `tipo_chave_entregue` e `condicao_devolucao` nunca são gravados; a condição vai como texto nas observações.
+
+Decisões pendentes: quem confirma a retirada (funcionário ou coordenador, e `FUNCIONARIO` não existe no ENUM do banco), se professor pode pedir chave, e OBS01 e OBS02 do plano.

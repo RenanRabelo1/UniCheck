@@ -30,13 +30,20 @@ type UsuarioRow = RowDataPacket & {
   professor_id: number | null
 }
 
-// A autorização ativa mais recente do aluno (projeto e professor responsável). Só alunos têm.
+// Só vale a autorização com projeto e professor ativos (a mesma regra dos triggers de item_solicitado).
+const AUTORIZACAO_VALIDA = `
+  FROM autorizacao a
+  JOIN projeto p ON p.id_projeto = a.id_projeto AND p.status = 'ATIVO'
+  JOIN usuario prof ON prof.id_usuario = p.id_professor AND prof.status = 'ATIVO'
+  WHERE a.id_aluno = u.id_usuario AND a.status = 'ATIVA'
+  ORDER BY a.id_autorizacao DESC LIMIT 1
+`
+
+// A autorização válida mais recente do aluno (projeto e professor responsável). Só alunos têm.
 const SELECT_USUARIO = `
   SELECT u.id_usuario, u.nome, u.matricula, u.email_institucional, u.senha_hash, u.perfil, u.status,
-    (SELECT p.nome FROM autorizacao a JOIN projeto p ON p.id_projeto = a.id_projeto
-      WHERE a.id_aluno = u.id_usuario AND a.status = 'ATIVA' ORDER BY a.id_autorizacao DESC LIMIT 1) AS projeto,
-    (SELECT p.id_professor FROM autorizacao a JOIN projeto p ON p.id_projeto = a.id_projeto
-      WHERE a.id_aluno = u.id_usuario AND a.status = 'ATIVA' ORDER BY a.id_autorizacao DESC LIMIT 1) AS professor_id
+    (SELECT p.nome ${AUTORIZACAO_VALIDA}) AS projeto,
+    (SELECT p.id_professor ${AUTORIZACAO_VALIDA}) AS professor_id
   FROM usuario u
 `
 

@@ -1,7 +1,13 @@
+import { AdminDashboardApi } from "../modules/admin/dashboard-api/AdminDashboardApi";
+import { OverdueAlertsApi } from "../modules/admin/alerts-api/OverdueAlertsApi";
+import { AuthorizationsApi } from "../modules/admin/authorizations-api/AuthorizationsApi";
+import { MovementHistoryApi } from "../modules/admin/history-api/MovementHistoryApi";
+import { MaterialsApi } from "../modules/admin/materials-api/MaterialsApi";
 import { CheckoutOperationsApi } from "../modules/admin/operations-api/CheckoutOperationsApi";
 import { ReturnOperationsApi } from "../modules/admin/operations-api/ReturnOperationsApi";
 import { PendingRequestsApi } from "../modules/admin/requests-api/PendingRequestsApi";
 import { RequestAnalysisApi } from "../modules/admin/requests-api/RequestAnalysisApi";
+import { RoomsKeysApi } from "../modules/admin/rooms-keys-api/RoomsKeysApi";
 import { isApiMode } from "../services/api";
 import { createRequest } from "../services/requests";
 import { useState, type FormEvent } from "react";
@@ -153,23 +159,31 @@ export function AppShell() {
           );
           break;
         case "admin-alerts":
-          screen = (
+          screen = isApiMode() ? (
+            <OverdueAlertsApi
+              onRegisterReturn={() => goToAdminView("admin-return")}
+            />
+          ) : (
             <OverdueAlertsPage
               onRegisterReturn={() => goToAdminView("admin-return")}
             />
           );
           break;
         case "admin-materials":
-          screen = <MaterialsManagement />;
+          screen = isApiMode() ? <MaterialsApi /> : <MaterialsManagement />;
           break;
         case "admin-rooms-keys":
-          screen = <RoomsKeysManagement />;
+          screen = isApiMode() ? <RoomsKeysApi /> : <RoomsKeysManagement />;
           break;
         case "admin-authorizations":
-          screen = <AuthorizationsProjects />;
+          screen = isApiMode() ? (
+            <AuthorizationsApi />
+          ) : (
+            <AuthorizationsProjects />
+          );
           break;
         case "admin-history":
-          screen = <MovementHistory />;
+          screen = isApiMode() ? <MovementHistoryApi /> : <MovementHistory />;
           break;
       }
 
@@ -187,31 +201,42 @@ export function AppShell() {
       );
     }
 
-    return (
+    const openDashboardAction = (action: string) => {
+      const actionViews: Partial<Record<string, AdminView>> = {
+        requests: "admin-pending",
+        "review-requests": "admin-pending",
+        operations: "admin-checkout",
+        "register-pickup": "admin-checkout",
+        "register-return": "admin-return",
+        inventory: "admin-materials",
+        "manage-inventory": "admin-materials",
+        "rooms-keys": "admin-rooms-keys",
+        alerts: "admin-alerts",
+        "authorized-users": "admin-authorizations",
+        reports: "admin-history",
+        refresh: "admin-alerts",
+      };
+      const view = actionViews[action];
+      if (view) setActiveView(view);
+    };
+    const openRequest = (requestId: string) => {
+      setSelectedAdminRequestId(requestId);
+      setActiveView("admin-analysis");
+    };
+
+    return isApiMode() ? (
+      <AdminDashboardApi
+        session={demoSession.session.dashboard}
+        onLogout={logout}
+        onAction={openDashboardAction}
+        onViewRequest={openRequest}
+      />
+    ) : (
       <AdminDashboard
         session={demoSession.session.dashboard}
         onLogout={logout}
-        onAction={(action) => {
-          const actionViews: Partial<Record<string, AdminView>> = {
-            requests: "admin-pending",
-            "review-requests": "admin-pending",
-            operations: "admin-checkout",
-            "register-pickup": "admin-checkout",
-            "register-return": "admin-return",
-            inventory: "admin-materials",
-            "manage-inventory": "admin-materials",
-            "authorized-users": "admin-authorizations",
-            reports: "admin-history",
-            refresh: "admin-alerts",
-          };
-          const view = actionViews[action];
-          if (view) setActiveView(view);
-        }}
-        onViewRequest={(requestId) => {
-          // Os cards do painel ainda são demonstrativos; escolha o pedido real na fila.
-          setSelectedAdminRequestId(isApiMode() ? null : requestId);
-          setActiveView(isApiMode() ? "admin-pending" : "admin-analysis");
-        }}
+        onAction={openDashboardAction}
+        onViewRequest={openRequest}
       />
     );
   }

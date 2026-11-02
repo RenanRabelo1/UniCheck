@@ -51,3 +51,25 @@ export const getJson = <T>(
 ) => requestJson<T>(path, { signal }, token);
 export const postJson = <T>(path: string, body: unknown, token?: string) =>
   requestJson<T>(path, { method: "POST", body: JSON.stringify(body) }, token);
+export const patchJson = <T>(path: string, body: unknown, token?: string) =>
+  requestJson<T>(path, { method: "PATCH", body: JSON.stringify(body) }, token);
+
+/** Token da sessão atual; sem ele, a chamada nem chega ao servidor. */
+export function sessionToken(): string {
+  const value = sessionStorage.getItem("unicheck_token");
+  if (!value) throw new ApiError("Entre novamente para continuar.", 401);
+  return value;
+}
+
+/** Confere a resposta do servidor contra o contrato esperado pela tela. */
+export function parseResponse<T>(
+  schema: { safeParse: (value: unknown) => { success: boolean; data?: T } },
+  value: unknown,
+): T {
+  const result = schema.safeParse(value);
+  if (!result.success)
+    throw new ApiError(
+      "O servidor retornou dados incompatíveis. Atualize a página e confira a versão do servidor.",
+    );
+  return result.data as T;
+}

@@ -217,7 +217,10 @@ BEGIN
         IF aluno_solicitante IS NOT NULL THEN
             SELECT EXISTS (
                 SELECT 1 FROM autorizacao au
+                JOIN projeto p ON p.id_projeto = au.id_projeto
+                JOIN usuario prof ON prof.id_usuario = p.id_professor
                 WHERE au.id_aluno = aluno_solicitante AND au.status = 'ATIVA'
+                  AND p.status = 'ATIVO' AND prof.status = 'ATIVO'
             ) INTO possui_autorizacao;
 
             IF possui_autorizacao = FALSE THEN
@@ -235,7 +238,9 @@ BEGIN
     DECLARE aluno_solicitante BIGINT UNSIGNED;
     DECLARE possui_autorizacao BOOLEAN;
 
-    IF NEW.id_chave IS NOT NULL THEN
+    IF NEW.id_chave IS NOT NULL
+       AND (NOT (NEW.id_chave <=> OLD.id_chave)
+            OR (OLD.status_item = 'PENDENTE' AND NEW.status_item = 'APROVADO')) THEN
         SELECT a.id_aluno INTO aluno_solicitante
         FROM solicitacao s
         LEFT JOIN aluno a ON a.id_aluno = s.id_usuario_solicitante
@@ -244,7 +249,10 @@ BEGIN
         IF aluno_solicitante IS NOT NULL THEN
             SELECT EXISTS (
                 SELECT 1 FROM autorizacao au
+                JOIN projeto p ON p.id_projeto = au.id_projeto
+                JOIN usuario prof ON prof.id_usuario = p.id_professor
                 WHERE au.id_aluno = aluno_solicitante AND au.status = 'ATIVA'
+                  AND p.status = 'ATIVO' AND prof.status = 'ATIVO'
             ) INTO possui_autorizacao;
 
             IF possui_autorizacao = FALSE THEN

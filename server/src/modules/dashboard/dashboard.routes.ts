@@ -1,8 +1,9 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../../middlewares/authenticate.js'
-import { getDashboard } from './dashboard.controller.js'
+import { getAdminDashboard, getDashboard } from './dashboard.controller.js'
 
 export const dashboardRoutes = Router()
 
-// O painel de início existe para professor e aluno. O coordenador terá painel próprio.
+// Cada público tem o seu painel: professor e aluno veem os próprios itens; a Coordenação vê a operação.
 dashboardRoutes.get('/', authenticate, requireRole('PROFESSOR', 'ALUNO'), getDashboard)
+dashboardRoutes.get('/admin', authenticate, requireRole('COORDENADOR', 'FUNCIONARIO'), getAdminDashboard)
