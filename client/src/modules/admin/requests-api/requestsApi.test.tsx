@@ -315,15 +315,13 @@ it("identifica como reais apenas os módulos administrativos integrados", () => 
     children: <p>Conteúdo</p>,
   };
   const view = render(<AdminWorkspace {...props} activeView="admin-pending" />);
-  expect(
-    screen.getByText("Pedidos reais · As alterações são salvas no sistema."),
-  ).toBeTruthy();
-  view.rerender(<AdminWorkspace {...props} activeView="admin-materials" />);
-  expect(screen.getByText(/Dados locais/)).toBeTruthy();
+  expect(screen.getByText("As alterações são salvas no sistema.")).toBeTruthy();
+  view.rerender(
+    <AdminWorkspace {...props} activeView="admin-authorizations" />,
+  );
+  expect(screen.getByText("As alterações são salvas no sistema.")).toBeTruthy();
   view.rerender(<AdminWorkspace {...props} activeView="admin-checkout" />);
-  expect(
-    screen.getByText("Pedidos reais · As alterações são salvas no sistema."),
-  ).toBeTruthy();
+  expect(screen.getByText("As alterações são salvas no sistema.")).toBeTruthy();
   vi.stubEnv("VITE_DATA_SOURCE", "mock");
   view.rerender(<AdminWorkspace {...props} activeView="admin-pending" />);
   expect(screen.getByText(/Dados locais/)).toBeTruthy();
@@ -340,6 +338,18 @@ it("integra login da coordenação, fila, seleção e retorno à fila atualizada
           role: "coordinator",
           roleLabel: "Coordenador CCT",
         },
+      }),
+    )
+    .mockResolvedValueOnce(
+      response({
+        summary: {
+          pendingItems: 1,
+          approvedItems: 0,
+          withdrawnItems: 0,
+          pendingReturns: 0,
+          openAlerts: 0,
+        },
+        recentRequests: [],
       }),
     )
     .mockResolvedValueOnce(response([request]))

@@ -26,6 +26,8 @@ export const adminDemoActionLabels: Record<AdminAction, string> = {
   requests: "A listagem de solicitações seria aberta",
   operations: "A área de retiradas e devoluções seria aberta",
   inventory: "O inventário seria aberto",
+  "rooms-keys": "O cadastro de salas e chaves seria aberto",
+  alerts: "Os alertas de atraso seriam abertos",
   refresh: "Os indicadores demonstrativos seriam atualizados",
 };
 

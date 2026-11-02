@@ -53,8 +53,12 @@ export const salaService = {
 
 export const chaveService = {
   async list() {
-    const [chaves, salas] = await Promise.all([chaveRepository.listAll(), chaveRepository.listSalas()])
-    return chaves.map((chave) => toChaveView(chave, salas))
+    const [chaves, salas, emPosse] = await Promise.all([
+      chaveRepository.listAll(),
+      chaveRepository.listSalas(),
+      chaveRepository.idsEmPosse(),
+    ])
+    return chaves.map((chave) => toChaveView(chave, salas, emPosse.has(chave.id)))
   },
 
   async create(input: CreateChaveInput) {
@@ -87,7 +91,8 @@ export const chaveService = {
       }
 
       await chaveRepository.setChaveAtiva(id, input.active, connection)
-      return toChaveView({ ...chave, ativo: input.active }, await chaveRepository.listSalas(connection))
+      const emPosse = await chaveRepository.idsEmPosse(connection)
+      return toChaveView({ ...chave, ativo: input.active }, await chaveRepository.listSalas(connection), emPosse.has(id))
     }, TRAVA_CADASTRO)
   },
 }

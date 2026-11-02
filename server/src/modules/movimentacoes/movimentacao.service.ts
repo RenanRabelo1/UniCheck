@@ -5,8 +5,8 @@ import { todayIso } from '../../utils/dates.js'
 import { alertaRepository } from '../alertas/alerta.repository.js'
 import { solicitacaoRepository } from '../solicitacoes/solicitacao.repository.js'
 import { usuarioRepository } from '../usuarios/usuario.repository.js'
-import { toMovimentacaoView } from './movimentacao.mapper.js'
-import { movimentacaoRepository } from './movimentacao.repository.js'
+import { toHistoricoView, toMovimentacaoView } from './movimentacao.mapper.js'
+import { movimentacaoRepository, type FiltrosHistorico } from './movimentacao.repository.js'
 import type { DevolucaoInput, RetiradaInput } from './movimentacao.validation.js'
 
 export const movimentacaoService = {
@@ -52,6 +52,11 @@ export const movimentacaoService = {
     })
 
     return { ...toMovimentacaoView(movimentacao, funcionario.nome), wasLate: atrasada }
+  },
+
+  async historico(filtros: FiltrosHistorico) {
+    const itens = await movimentacaoRepository.listHistorico(filtros)
+    return itens.map(toHistoricoView)
   },
 
   async list(filtros: { requestId?: string; itemId?: string }) {

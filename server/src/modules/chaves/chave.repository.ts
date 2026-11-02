@@ -2,7 +2,7 @@ import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise'
 import { pool } from '../../database/connection.js'
 import { parseId, type Db } from '../../database/sql.js'
 import type { Chave, Sala, TipoChave } from '../../database/types.js'
-import { STATUS_QUE_OCUPAM } from '../solicitacoes/solicitacao.status.js'
+import { STATUS_EM_POSSE, STATUS_QUE_OCUPAM } from '../solicitacoes/solicitacao.status.js'
 
 type SalaRow = RowDataPacket & { id_sala: number; codigo: string; descricao: string | null; status: 'ATIVA' | 'INATIVA' }
 type ChaveRow = RowDataPacket & {
@@ -28,6 +28,7 @@ const toChave = (row: ChaveRow): Chave => ({
 })
 
 const OCUPAM = STATUS_QUE_OCUPAM.map((status) => `'${status}'`).join(', ')
+const EM_POSSE = STATUS_EM_POSSE.map((status) => `'${status}'`).join(', ')
 
 export const chaveRepository = {
   // ---- salas ----
@@ -102,6 +103,14 @@ export const chaveRepository = {
   async listActive(db: Db = pool): Promise<Chave[]> {
     const [rows] = await db.query<ChaveRow[]>("SELECT id_chave, id_sala, tipo_chave, status FROM chave WHERE status = 'ATIVA' ORDER BY id_chave")
     return rows.map(toChave)
+  },
+
+  /** Ids das chaves com algum item retirado ou em atraso agora: a situação vem do item, não de uma coluna. */
+  async idsEmPosse(db: Db = pool): Promise<Set<string>> {
+    const [rows] = await db.query<(RowDataPacket & { id_chave: number })[]>(
+      `SELECT DISTINCT id_chave FROM item_solicitado WHERE id_chave IS NOT NULL AND status_item IN (${EM_POSSE})`,
+    )
+    return new Set(rows.map((row) => String(row.id_chave)))
   },
 
   async findChave(id: string, db: Db = pool): Promise<Chave | undefined> {

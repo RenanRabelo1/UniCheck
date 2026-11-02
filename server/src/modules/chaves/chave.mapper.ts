@@ -6,7 +6,7 @@ export function toSalaView(sala: Sala) {
   return { id: sala.id, code: sala.codigo, name: sala.nome, active: sala.ativo }
 }
 
-export function toChaveView(chave: Chave, salas: Sala[]) {
+export function toChaveView(chave: Chave, salas: Sala[], emPosse = false) {
   const sala = salas.find((item) => item.id === chave.salaId)
   return {
     id: chave.id,
@@ -14,5 +14,6 @@ export function toChaveView(chave: Chave, salas: Sala[]) {
     type: chave.tipo === 'PRIMARIA' ? ('primary' as const) : ('secondary' as const),
     typeLabel: ROTULO_TIPO_CHAVE[chave.tipo],
     active: chave.ativo,
+    inPossession: emPosse,
   }
 }

@@ -15,6 +15,27 @@ const chavesDaSala = (opcoes: { items: { type: string; id: string; roomId: strin
   opcoes.items.filter((item) => item.type === 'key' && item.roomId === salaId)
 const optionsDoProfessor = (ctx: Ctx) => request(ctx.app).get('/solicitacoes/opcoes').set('Authorization', ctx.professor)
 
+describe('disponibilidade da chave (RF21.9)', () => {
+  it('informa se a chave está em posse ou livre', async () => {
+    const ctx = await start(NOW)
+    const { body } = await request(ctx.app).get('/admin/chaves').set('Authorization', ctx.coord)
+    const situacao = (id: string) => body.find((chave: { id: string }) => chave.id === id).inPossession
+    expect(situacao('1001')).toBe(true) // item 1008 está RETIRADO
+    expect(situacao('1002')).toBe(false)
+  })
+
+  it('item em atraso continua em posse; devolvido libera', async () => {
+    const ctx = await start('2026-10-05T22:41:00-03:00')
+    await send(ctx, 'post', '/alertas/verificar', {})
+    const emAtraso = await request(ctx.app).get('/admin/chaves').set('Authorization', ctx.coord)
+    expect(emAtraso.body.find((chave: { id: string }) => chave.id === '1001').inPossession).toBe(true)
+
+    await send(ctx, 'post', '/movimentacoes/devolucoes', { requestId: '1005', itemId: '1008' })
+    const devolvida = await request(ctx.app).get('/admin/chaves').set('Authorization', ctx.coord)
+    expect(devolvida.body.find((chave: { id: string }) => chave.id === '1001').inPossession).toBe(false)
+  })
+})
+
 describe('salas', () => {
   it('lista, e só Coordenação e Secretaria consultam', async () => {
     const ctx = await start(NOW)
@@ -92,6 +113,7 @@ describe('chaves', () => {
       type: 'primary',
       typeLabel: 'Primária',
       active: true,
+      inPossession: true,
     })
   })
 

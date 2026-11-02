@@ -1,5 +1,6 @@
 import { withTransaction } from '../../database/sql.js'
 import { currentTime, todayIso } from '../../utils/dates.js'
+import { ROTULO_TIPO_CHAVE } from '../chaves/chave.mapper.js'
 import { solicitacaoRepository } from '../solicitacoes/solicitacao.repository.js'
 import { LIMITE_DEVOLUCAO } from '../solicitacoes/solicitacao.regras.js'
 import { alertaRepository, type AlertaComSolicitante } from './alerta.repository.js'
@@ -8,9 +9,18 @@ function toAlertaView(alerta: AlertaComSolicitante) {
   return {
     id: alerta.id,
     requestId: alerta.solicitacaoId,
+    protocol: alerta.protocolo,
     itemId: alerta.itemId,
     itemName: alerta.itemNome,
+    itemType: alerta.tipoItem === 'CHAVE' ? ('key' as const) : ('material' as const),
+    room: alerta.sala,
+    keyType: alerta.tipoChave ? ROTULO_TIPO_CHAVE[alerta.tipoChave] : null,
     requester: alerta.solicitanteNome,
+    registration: alerta.matricula,
+    contact: alerta.contato,
+    withdrawnAt: alerta.retiradoEm,
+    dueDate: alerta.dataUtilizacao,
+    dueTime: alerta.devolucaoPrevista,
     createdAt: alerta.criadoEm,
     resolvedAt: alerta.resolvidoEm ?? null,
     status: alerta.resolvidoEm ? ('resolved' as const) : ('open' as const),

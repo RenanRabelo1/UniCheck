@@ -13,6 +13,80 @@ const patch = (ctx: Ctx, id: string, body: object, token = ctx.coord) =>
   request(ctx.app).patch(`/admin/materiais/${id}`).set('Authorization', token).send(body)
 const options = (ctx: Ctx) => request(ctx.app).get('/solicitacoes/opcoes').set('Authorization', ctx.professor)
 
+describe('controle individual ou por quantidade (RF20.5 a RF20.10)', () => {
+  const individual = { name: 'Projetor BenQ', category: 'Projetor', control: 'individual', patrimony: 'PAT-1', totalQuantity: 1 }
+
+  it('cadastra material individual com categoria e patrimônio', async () => {
+    const ctx = await start(NOW)
+    const response = await create(ctx, individual)
+    expect(response.status).toBe(201)
+    expect(response.body).toMatchObject({
+      category: 'Projetor',
+      control: 'individual',
+      patrimony: 'PAT-1',
+      totalQuantity: 1,
+      inPossession: 0,
+    })
+  })
+
+  it('sem controle informado continua por quantidade', async () => {
+    const ctx = await start(NOW)
+    const response = await create(ctx, { name: 'Pincel', totalQuantity: 5 })
+    expect(response.body).toMatchObject({ category: 'Geral', control: 'quantity', patrimony: null })
+  })
+
+  it('dois individuais com o mesmo nome e patrimônios diferentes são materiais distintos', async () => {
+    const ctx = await start(NOW)
+    expect((await create(ctx, individual)).status).toBe(201)
+    expect((await create(ctx, { ...individual, patrimony: 'PAT-2' })).status).toBe(201)
+  })
+
+  it('patrimônio é único', async () => {
+    const ctx = await start(NOW)
+    await create(ctx, individual)
+    const repetido = await create(ctx, { ...individual, name: 'Outro projetor' })
+    expect(repetido.status).toBe(409)
+    expect(repetido.body.message).toContain('patrimônio')
+  })
+
+  it.each([
+    ['individual sem patrimônio', { ...individual, patrimony: undefined }],
+    ['individual com mais de uma unidade', { ...individual, totalQuantity: 2 }],
+    ['por quantidade com patrimônio', { name: 'Pincel', control: 'quantity', patrimony: 'X', totalQuantity: 2 }],
+  ])('rejeita %s', async (_nome, body) => {
+    const ctx = await start(NOW)
+    expect((await create(ctx, body)).status).toBe(400)
+  })
+
+  it('edita categoria e patrimônio, sem deixar o individual virar lote', async () => {
+    const ctx = await start(NOW)
+    const { body } = await create(ctx, individual)
+
+    const editado = await patch(ctx, body.id, { category: 'Audiovisual', patrimony: 'PAT-9' })
+    expect(editado.body).toMatchObject({ category: 'Audiovisual', patrimony: 'PAT-9' })
+    expect((await patch(ctx, body.id, { totalQuantity: 3 })).status).toBe(400)
+    expect((await patch(ctx, body.id, { patrimony: '' })).status).toBe(400)
+    expect((await patch(ctx, '1002', { patrimony: 'PAT-3' })).status).toBe(400)
+  })
+
+  it('informa quantas unidades estão em posse agora', async () => {
+    const ctx = await start(NOW)
+    const { body } = await request(ctx.app).get('/admin/materiais').set('Authorization', ctx.coord)
+    const emPosse = (id: string) => body.find((item: { id: string }) => item.id === id).inPossession
+    expect(emPosse('1001')).toBe(1) // item 1004 retirado
+    expect(emPosse('1004')).toBe(0)
+  })
+
+  it('o professor vê o patrimônio do material individual nas opções', async () => {
+    const ctx = await start(NOW)
+    const { body } = await create(ctx, individual)
+    const opcoes = await options(ctx)
+    expect(opcoes.body.items).toContainEqual(
+      expect.objectContaining({ id: body.id, detail: 'Patrimônio PAT-1', total: 1 }),
+    )
+  })
+})
+
 describe('GET /admin/materiais', () => {
   it('lista o cadastro com a quantidade já comprometida', async () => {
     const ctx = await start(NOW)

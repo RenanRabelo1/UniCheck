@@ -43,9 +43,15 @@ export interface Sala {
   ativo: boolean
 }
 
+export type ControleMaterial = 'INDIVIDUAL' | 'QUANTIDADE'
+
 export interface Material {
   id: string
   nome: string
+  categoria: string
+  /** Individual: uma unidade identificada por patrimônio. Quantidade: lote sem patrimônio. */
+  controle: ControleMaterial
+  patrimonio?: string
   /** Informação extra exibida na tela, como patrimônio ou bancada. */
   detalhe?: string
   quantidadeTotal: number

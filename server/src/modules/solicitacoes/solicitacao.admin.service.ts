@@ -104,6 +104,19 @@ export const solicitacaoAdminService = {
         if (total === undefined)
           throw new HttpError(409, `${item.nome} está inativo no cadastro.`);
 
+        // A autorização pode ter sido revogada depois do pedido (o trigger do banco também confere isso).
+        if (item.tipo === "CHAVE") {
+          const solicitante = await usuarioRepository.findById(
+            cabecalho.usuarioId,
+          );
+          if (solicitante?.perfil === "ALUNO" && !solicitante.autorizado) {
+            throw new HttpError(
+              409,
+              "O aluno não tem mais autorização ativa para esta chave. Recuse o item informando o motivo.",
+            );
+          }
+        }
+
         // Reconfere a disponibilidade AGORA: dois pedidos pendentes podem ter pedido o mesmo item.
         // Travar o cadastro do item faz o segundo aprovador esperar e enxergar o estoque já atualizado.
         await travarItens([item], connection);

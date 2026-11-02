@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { alertaRoutes } from '../modules/alertas/alerta.routes.js'
 import { chaveRoutes, salaRoutes } from '../modules/chaves/chave.routes.js'
 import { authRoutes } from '../modules/auth/auth.routes.js'
+import { autorizacaoRoutes, projetoRoutes } from '../modules/autorizacoes/autorizacao.routes.js'
 import { dashboardRoutes } from '../modules/dashboard/dashboard.routes.js'
 import { materialRoutes } from '../modules/materiais/material.routes.js'
 import { movimentacaoRoutes } from '../modules/movimentacoes/movimentacao.routes.js'
@@ -22,3 +23,5 @@ routes.use('/alertas', alertaRoutes)
 routes.use('/admin/materiais', materialRoutes)
 routes.use('/admin/salas', salaRoutes)
 routes.use('/admin/chaves', chaveRoutes)
+routes.use('/admin/projetos', projetoRoutes)
+routes.use('/admin/autorizacoes', autorizacaoRoutes)
