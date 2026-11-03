@@ -82,3 +82,12 @@ form { padding-top: 21px; }.access-type { margin-bottom: 12px; color: #535353; t
 .continue-request, .cancel-request { font-size: 13px; }
 .authorization-notice strong { font-size: 13px; }
 .authorization-notice span { font-size: 12px; }
+
+/* Acessibilidade: vale para todas as telas. */
+:focus-visible { outline: 3px solid #448bd1; outline-offset: 2px; }
+#conteudo:focus { outline: none; }
+.skip-link { position: absolute; top: -60px; left: 12px; z-index: 1000; padding: 10px 14px; border-radius: 8px; background: #0b3568; color: #fff; font-weight: 700; }
+.skip-link:focus { top: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

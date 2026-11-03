@@ -13,6 +13,7 @@ import type {
   AdminMetric,
   AdminSession,
 } from "./AdminDashboard.types";
+import { SkipLink } from "./SkipLink";
 import "./AdminDashboard.css";
 
 export type AdminDashboardProps = {
@@ -255,6 +256,7 @@ export function AdminDashboard({
 
   return (
     <div className="admin-shell">
+      <SkipLink />
       <header className="admin-header">
         <button
           className="admin-menu-button"
@@ -335,7 +337,7 @@ export function AdminDashboard({
         )}
       </aside>
 
-      <main className="admin-main">
+      <main className="admin-main" id="conteudo" tabIndex={-1}>
         <section className="admin-page-heading">
           <div>
             <p>

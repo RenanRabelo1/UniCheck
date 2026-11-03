@@ -78,7 +78,7 @@ export function RequestConfirmationScreen({
   }
 
   return (
-    <main className="confirmation-page">
+    <main className="confirmation-page" id="conteudo" tabIndex={-1}>
       <AppTopNav
         user={session}
         active="new"
@@ -296,7 +296,7 @@ export function RequestConfirmationScreen({
                 J-02.
               </p>
             </div>
-            <button type="button" onClick={finishFlow}>
+            <button type="button" autoFocus onClick={finishFlow}>
               Ir para Painel de Empréstimos
             </button>
           </section>

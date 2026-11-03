@@ -1,18 +1,16 @@
 import { z } from "zod";
-import { postJson } from "./api";
+import { getJson, postJson } from "./api";
 import type { DemoRole, DemoSession } from "../modules/auth/demoSession";
 
-const schema = z.object({
-  token: z.string().min(1),
-  user: z.object({
-    name: z.string(),
-    registration: z.string(),
-    role: z.enum(["professor", "student", "coordinator"]),
-    roleLabel: z.string(),
-  }),
+const userSchema = z.object({
+  name: z.string(),
+  registration: z.string(),
+  role: z.enum(["professor", "student", "coordinator"]),
+  roleLabel: z.string(),
 });
+const schema = z.object({ token: z.string().min(1), user: userSchema });
 
-type SessionUser = z.infer<typeof schema>["user"];
+type SessionUser = z.infer<typeof userSchema>;
 
 function toSession(user: SessionUser): DemoSession {
   if (user.role === "coordinator")
@@ -34,6 +32,16 @@ export async function loginApi(
   );
   sessionStorage.setItem("unicheck_token", token);
   return toSession(user);
+}
+
+/** Reabre a sessão guardada ao recarregar a página. Sem token válido, volta ao login. */
+export async function restoreSession(token: string): Promise<DemoSession> {
+  return toSession(userSchema.parse(await getJson("/auth/me", token)));
+}
+
+/** Invalida o token no servidor. Se a rede falhar, a sessão ainda é encerrada neste navegador. */
+export async function logoutApi(token: string): Promise<void> {
+  await postJson("/auth/logout", {}, token).catch(() => undefined);
 }
 
 export type RegisterData = {

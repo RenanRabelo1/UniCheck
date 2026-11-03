@@ -79,7 +79,7 @@ describe('POST /movimentacoes/retiradas', () => {
 describe('POST /movimentacoes/devolucoes', () => {
   it('registra a devolução e não deixa devolver duas vezes', async () => {
     const ctx = await start('2026-10-05T17:00:00-03:00')
-    const body = { requestId: '1003', itemId: '1004' }
+    const body = { requestId: '1003', itemId: '1004', condition: 'INTEGRO' }
 
     const response = await request(ctx.app).post('/movimentacoes/devolucoes').set('Authorization', ctx.coord).send(body)
     expect(response.status).toBe(201)
@@ -96,7 +96,7 @@ describe('POST /movimentacoes/devolucoes', () => {
     const response = await request(ctx.app)
       .post('/movimentacoes/devolucoes')
       .set('Authorization', ctx.coord)
-      .send({ requestId: '1001', itemId: '1001' })
+      .send({ requestId: '1001', itemId: '1001', condition: 'INTEGRO' })
     expect(response.status).toBe(409)
   })
 })

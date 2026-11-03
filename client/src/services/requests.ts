@@ -28,6 +28,7 @@ const itemSchema = z.object({
   statusLabel: z.string(),
   updatedAt: z.string(),
   refusalReason: z.string().nullable(),
+  decidedAt: z.string().nullish(),
 });
 export const requestSchema = z.object({
   id: z.string(),
@@ -42,6 +43,7 @@ export const requestSchema = z.object({
   items: z.array(itemSchema),
 });
 const detailSchema = requestSchema.extend({
+  items: z.array(itemSchema.extend({ decidedBy: z.string().nullish() })),
   requester: z.object({
     name: z.string(),
     registration: z.string(),
@@ -57,6 +59,7 @@ const detailSchema = requestSchema.extend({
       responsible: z.string(),
       attendant: z.string(),
       notes: z.string().nullable(),
+      condition: z.string().nullish(),
     }),
   ),
 });
@@ -150,10 +153,13 @@ export async function getRequestDetails(
     if (["APROVADO", "RESERVADO", "RECUSADO"].includes(item.status))
       timeline.push({
         id: `${item.id}-decision`,
-        date: item.updatedAt,
+        date: item.decidedAt ?? item.updatedAt,
         title: `${item.name}: ${item.statusLabel}`,
         description:
-          item.refusalReason ?? "Situação registrada pela secretaria.",
+          item.refusalReason ??
+          (item.decidedBy
+            ? `Decisão de ${item.decidedBy}.`
+            : "Situação registrada pela secretaria."),
       });
   }
   for (const movement of request.movements)
@@ -186,6 +192,10 @@ export async function getRequestDetails(
         quantity: item.quantity,
         status: item.status,
         rejectionReason: item.refusalReason ?? undefined,
+        decision:
+          item.decidedBy && item.decidedAt
+            ? { by: item.decidedBy, date: dateTime(item.decidedAt) }
+            : undefined,
         pickup: pickup
           ? { date: dateTime(pickup.registeredAt), attendant: pickup.attendant }
           : undefined,
@@ -193,6 +203,7 @@ export async function getRequestDetails(
           dueDate: `${dateOnly(request.date)} às ${request.returnTime}`,
           date: returned ? dateTime(returned.registeredAt) : undefined,
           attendant: returned?.attendant,
+          condition: returned?.condition ?? undefined,
         },
       };
     }),
@@ -209,6 +220,7 @@ const catalogItemSchema = z.object({
   id: z.string(),
   name: z.string(),
   detail: z.string().nullable(),
+  category: z.string().nullish(),
   roomId: z.string().nullable(),
   total: z.number(),
   available: z.number(),

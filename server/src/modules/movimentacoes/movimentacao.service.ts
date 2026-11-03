@@ -1,7 +1,9 @@
 import { withTransaction } from '../../database/sql.js'
-import type { TipoMovimentacao, Usuario } from '../../database/types.js'
+import type { ItemSolicitacao, Movimentacao, Solicitacao, TipoMovimentacao, Usuario } from '../../database/types.js'
 import { HttpError } from '../../middlewares/httpError.js'
 import { alertaRepository } from '../alertas/alerta.repository.js'
+import { ROTULO_TIPO_CHAVE } from '../chaves/chave.mapper.js'
+import { chaveRepository } from '../chaves/chave.repository.js'
 import { solicitacaoRepository } from '../solicitacoes/solicitacao.repository.js'
 import { usuarioRepository } from '../usuarios/usuario.repository.js'
 import { toHistoricoView, toMovimentacaoView } from './movimentacao.mapper.js'
@@ -22,9 +24,12 @@ export const movimentacaoService = {
       // A retirada pode ser registrada em qualquer data: a data da solicitação é só a previsão,
       // e o horário real fica salvo na movimentação.
 
-      await solicitacaoRepository.updateItem(item.id, { status: 'RETIRADO', atualizadoEm: now }, connection)
+      const chaveEntregue = item.tipo === 'CHAVE' ? await resolverChaveEntregue(solicitacao, item, input.keyId, connection) : undefined
+
+      await solicitacaoRepository.updateItem(item.id, { status: 'RETIRADO', atualizadoEm: now, chaveEntregue }, connection)
       await solicitacaoRepository.refreshStatusGeral(solicitacao.id, connection)
-      return registrar('RETIRADA', encontrado, funcionario, input, now, connection)
+      const atualizado = { solicitacao, item: { ...item, nome: chaveEntregue?.nome ?? item.nome } }
+      return registrar('RETIRADA', atualizado, funcionario, input, now, connection)
     })
 
     return toMovimentacaoView(movimentacao, funcionario.nome)
@@ -41,7 +46,11 @@ export const movimentacaoService = {
       }
 
       const atrasada = item.status === 'ATRASADO'
-      await solicitacaoRepository.updateItem(item.id, { status: 'DEVOLVIDO', atualizadoEm: now }, connection)
+      await solicitacaoRepository.updateItem(
+        item.id,
+        { status: 'DEVOLVIDO', atualizadoEm: now, condicaoDevolucao: input.condition },
+        connection,
+      )
       await solicitacaoRepository.refreshStatusGeral(solicitacao.id, connection)
       // Regra do docs: devolver resolve o alerta de atraso do item.
       await alertaRepository.resolverDoItem(item.id, now, connection)
@@ -63,11 +72,38 @@ export const movimentacaoService = {
   },
 }
 
+/** A chave física entregue precisa ser uma chave ativa da mesma sala da que foi pedida (RF17). */
+async function resolverChaveEntregue(
+  solicitacao: Omit<Solicitacao, 'itens'>,
+  item: ItemSolicitacao,
+  keyId: string | undefined,
+  connection: Parameters<typeof solicitacaoRepository.refreshStatusGeral>[1],
+) {
+  if (!keyId) throw new HttpError(400, 'Selecione a chave entregue.')
+
+  const pedida = await chaveRepository.findChave(item.referenciaId, connection)
+  const entregue = await chaveRepository.findActiveById(keyId, connection)
+  const sala = entregue && (await chaveRepository.findSala(entregue.salaId, connection))
+  if (!entregue || !sala || entregue.salaId !== pedida?.salaId) {
+    throw new HttpError(400, 'Chave não encontrada para esta sala.')
+  }
+
+  // O trigger do banco confere a autorização quando a chave do item muda.
+  if (entregue.id !== pedida.id) {
+    const solicitante = await usuarioRepository.findById(solicitacao.usuarioId)
+    if (solicitante?.perfil === 'ALUNO' && !solicitante.autorizado) {
+      throw new HttpError(409, 'O aluno não tem mais autorização ativa para trocar a chave. Entregue a chave pedida.')
+    }
+  }
+
+  return { id: entregue.id, tipo: entregue.tipo, nome: `Chave ${sala.codigo} · ${ROTULO_TIPO_CHAVE[entregue.tipo]}` }
+}
+
 async function registrar(
   tipo: TipoMovimentacao,
   { solicitacao, item }: NonNullable<Awaited<ReturnType<typeof solicitacaoRepository.findItemForUpdate>>>,
   funcionario: Usuario,
-  dados: { responsibleName?: string; notes?: string },
+  dados: { responsibleName?: string; notes?: string; condition?: Movimentacao['condicao'] },
   now: Date,
   connection: Parameters<typeof solicitacaoRepository.refreshStatusGeral>[1],
 ) {
@@ -81,6 +117,7 @@ async function registrar(
       registradoPorId: funcionario.id,
       responsavel: dados.responsibleName || solicitante?.nome || 'Não informado',
       observacao: dados.notes || undefined,
+      condicao: dados.condition,
       now,
     },
     connection,

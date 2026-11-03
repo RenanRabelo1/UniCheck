@@ -12,6 +12,7 @@ import { isApiMode } from "../services/api";
 import { createRequest } from "../services/requests";
 import { useState, type FormEvent } from "react";
 import { AdminDashboard } from "../components/AdminDashboard";
+import { SkipLink } from "../components/SkipLink";
 import { MyRequestsScreen } from "../components/MyRequestsScreen";
 import type { MyRequest } from "../components/MyRequestsScreen.mock";
 import { NewRequestScreen } from "../components/NewRequestScreen";
@@ -32,14 +33,16 @@ import { PendingRequestsScreen } from "../modules/admin/pending-requests";
 import { RequestAnalysisScreen } from "../modules/admin/request-analysis";
 import { ReturnOperations } from "../modules/admin/return-operations";
 import { RoomsKeysManagement } from "../modules/admin/rooms-keys-management/RoomsKeysManagement";
+import { ProfessorMaterialsApi } from "../modules/professor-materials/ProfessorMaterialsApi";
 import { ProfessorMaterialsCatalog } from "../modules/professor-materials/ProfessorMaterialsCatalog";
 import { AdminWorkspace } from "./AdminWorkspace";
-import { type AdminView, type AppView } from "./navigation";
+import { type AdminView } from "./navigation";
+import { useAppView } from "./useAppView";
 
 export function AppShell() {
   const demoSession = useDemoSession();
   const [showRegister, setShowRegister] = useState(false);
-  const [activeView, setActiveView] = useState<AppView>("dashboard");
+  const [activeView, setActiveView] = useAppView();
   const [requestForReview, setRequestForReview] =
     useState<RequestConfirmationData | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<MyRequest | null>(
@@ -64,6 +67,9 @@ export function AppShell() {
     setSelectedAdminRequestId(null);
     demoSession.logout();
   }
+
+  if (demoSession.restoring)
+    return <main role="status">Carregando sessão…</main>;
 
   if (!demoSession.session && showRegister) {
     return (
@@ -256,13 +262,20 @@ export function AppShell() {
     demoSession.session.role === "professor"
   ) {
     return (
-      <main className="professor-materials-page">
+      <main className="professor-materials-page" id="conteudo" tabIndex={-1}>
+        <SkipLink />
         <div className="professor-materials-page__bar">
           <button type="button" onClick={() => setActiveView("dashboard")}>
             ← Voltar ao painel
           </button>
         </div>
-        <ProfessorMaterialsCatalog />
+        {isApiMode() ? (
+          <ProfessorMaterialsApi
+            onNewRequest={() => setActiveView("new-request")}
+          />
+        ) : (
+          <ProfessorMaterialsCatalog />
+        )}
       </main>
     );
   }

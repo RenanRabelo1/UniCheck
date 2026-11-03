@@ -4,10 +4,10 @@ import { historico, list, registrarDevolucao, registrarRetirada } from './movime
 
 export const movimentacaoRoutes = Router()
 
-// Regra do docs: quem registra retirada e devolução é a Secretaria (a Coordenação também pode).
 movimentacaoRoutes.use(authenticate, requireRole('FUNCIONARIO', 'COORDENADOR'))
 
 movimentacaoRoutes.get('/', list)
 movimentacaoRoutes.get('/historico', historico)
-movimentacaoRoutes.post('/retiradas', registrarRetirada)
-movimentacaoRoutes.post('/devolucoes', registrarDevolucao)
+// Decisão da equipe (RN09): só o Coordenador do CCT confirma retirada e devolução.
+movimentacaoRoutes.post('/retiradas', requireRole('COORDENADOR'), registrarRetirada)
+movimentacaoRoutes.post('/devolucoes', requireRole('COORDENADOR'), registrarDevolucao)

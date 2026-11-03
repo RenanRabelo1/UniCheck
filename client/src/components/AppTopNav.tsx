@@ -1,3 +1,4 @@
+import { SkipLink } from "./SkipLink";
 import "./AppTopNav.css";
 
 export type AppTopNavProps = {
@@ -36,52 +37,55 @@ export function AppTopNav({
   ];
 
   return (
-    <header className="app-nav">
-      <div className="app-nav__content">
-        <button className="app-nav-brand" type="button" onClick={onHome}>
-          <img src="/brand/unifor.svg" alt="Unifor" />
-          <span aria-hidden="true" />
-          <span>
-            <strong>Sistema CCT</strong>
-            <small>Controle de Empréstimos · Bloco J-02</small>
-          </span>
-        </button>
+    <>
+      <SkipLink />
+      <header className="app-nav">
+        <div className="app-nav__content">
+          <button className="app-nav-brand" type="button" onClick={onHome}>
+            <img src="/brand/unifor.svg" alt="Unifor" />
+            <span aria-hidden="true" />
+            <span>
+              <strong>Sistema CCT</strong>
+              <small>Controle de Empréstimos · Bloco J-02</small>
+            </span>
+          </button>
 
-        <nav className="app-nav-links" aria-label="Navegação principal">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={active === item.id ? "active" : undefined}
-              aria-current={active === item.id ? "page" : undefined}
-              onClick={item.onClick}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
+          <nav className="app-nav-links" aria-label="Navegação principal">
+            {items.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={active === item.id ? "active" : undefined}
+                aria-current={active === item.id ? "page" : undefined}
+                onClick={item.onClick}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
 
-        <div className="app-nav-profile">
-          <span className="app-nav-profile__copy">
-            <strong>{user.name}</strong>
-            <small>{user.roleLabel} · Bloco J-02</small>
-          </span>
-          <span className="app-nav-profile__avatar" aria-hidden="true">
-            {user.name.charAt(0).toUpperCase()}
-          </span>
-          {onLogout && (
-            <button
-              type="button"
-              className="app-nav-logout"
-              onClick={onLogout}
-              aria-label="Encerrar sessão"
-              title="Encerrar sessão"
-            >
-              ↪ Sair
-            </button>
-          )}
+          <div className="app-nav-profile">
+            <span className="app-nav-profile__copy">
+              <strong>{user.name}</strong>
+              <small>{user.roleLabel} · Bloco J-02</small>
+            </span>
+            <span className="app-nav-profile__avatar" aria-hidden="true">
+              {user.name.charAt(0).toUpperCase()}
+            </span>
+            {onLogout && (
+              <button
+                type="button"
+                className="app-nav-logout"
+                onClick={onLogout}
+                aria-label="Encerrar sessão"
+                title="Encerrar sessão"
+              >
+                ↪ Sair
+              </button>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }

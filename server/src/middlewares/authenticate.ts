@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import { config } from '../config.js'
 import type { Perfil, Usuario } from '../database/types.js'
+import { sessaoRepository } from '../modules/auth/sessao.repository.js'
 import { usuarioRepository } from '../modules/usuarios/usuario.repository.js'
 import { HttpError } from './httpError.js'
 
@@ -9,7 +10,7 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      auth?: { usuario: Usuario }
+      auth?: { usuario: Usuario; sessao?: { jti: string; expiraEm: Date } }
     }
   }
 }
@@ -21,19 +22,23 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   }
 
   let subject: string | undefined
+  let sessao: { jti: string; expiraEm: Date } | undefined
   try {
     const payload = jwt.verify(header.slice('Bearer '.length), config.jwtSecret, { algorithms: ['HS256'] })
-    subject = typeof payload === 'object' ? payload.sub : undefined
+    if (typeof payload === 'object') {
+      subject = payload.sub
+      if (payload.jti && payload.exp) sessao = { jti: payload.jti, expiraEm: new Date(payload.exp * 1000) }
+    }
   } catch {
     throw new HttpError(401, 'Sessão inválida ou expirada.')
   }
 
   const usuario = subject ? await usuarioRepository.findById(subject) : undefined
-  if (!usuario || !usuario.ativo) {
+  if (!usuario || !usuario.ativo || (sessao && (await sessaoRepository.estaRevogada(sessao.jti)))) {
     throw new HttpError(401, 'Sessão inválida ou expirada.')
   }
 
-  req.auth = { usuario }
+  req.auth = { usuario, sessao }
   next()
 }
 

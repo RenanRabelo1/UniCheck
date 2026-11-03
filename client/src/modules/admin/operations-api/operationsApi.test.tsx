@@ -72,7 +72,9 @@ describe("Retirada pela API (tela 10)", () => {
   it("lista só itens aprovados e registra a retirada com termo aceito", async () => {
     fetchMock
       .mockResolvedValueOnce(response([request]))
+      .mockResolvedValueOnce(response([]))
       .mockResolvedValueOnce(response(movement("7", "Projetor", "withdrawal")))
+      .mockResolvedValueOnce(response([]))
       .mockResolvedValueOnce(response([]));
     render(<CheckoutOperationsApi />);
 
@@ -88,7 +90,7 @@ describe("Retirada pela API (tela 10)", () => {
     fireEvent.click(submit);
 
     expect(await screen.findByText("Retirada registrada")).toBeTruthy();
-    const [url, options] = fetchMock.mock.calls[1];
+    const [url, options] = fetchMock.mock.calls[2];
     expect(url).toBe("http://localhost:3000/movimentacoes/retiradas");
     expect(options.method).toBe("POST");
     expect(JSON.parse(options.body)).toEqual({
@@ -97,12 +99,13 @@ describe("Retirada pela API (tela 10)", () => {
       termAccepted: true,
     });
     expect(options.headers.Authorization).toBe("Bearer token-teste");
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(5));
   });
 
   it("mostra a mensagem do servidor quando a retirada é recusada", async () => {
     fetchMock
       .mockResolvedValueOnce(response([request]))
+      .mockResolvedValueOnce(response([]))
       .mockResolvedValueOnce(
         response({ message: "A retirada só pode ser registrada no dia de utilização (2026-11-02)." }, 409),
       );
@@ -115,8 +118,67 @@ describe("Retirada pela API (tela 10)", () => {
   });
 });
 
+describe("Chave entregue na retirada", () => {
+  const key = (id: string, type: string, typeLabel: string, room = "1") => ({
+    id,
+    room: { value: room, label: "Sala" },
+    type,
+    typeLabel,
+    active: true,
+    inPossession: false,
+  });
+  const keyRequest: AdminRequest = {
+    ...request,
+    items: [
+      {
+        ...baseItem,
+        id: "20",
+        type: "key" as const,
+        name: "Chave J-201 · Primária",
+        status: "APROVADO",
+        statusLabel: "Aprovado",
+      },
+    ],
+  };
+
+  it("exige escolher a chave da sala e envia a escolhida", async () => {
+    fetchMock
+      .mockResolvedValueOnce(response([keyRequest]))
+      .mockResolvedValueOnce(
+        response([
+          key("31", "primary", "Primária"),
+          key("32", "secondary", "Secundária"),
+          key("33", "primary", "Primária de outra sala", "2"),
+        ]),
+      )
+      .mockResolvedValueOnce(
+        response(movement("20", "Chave J-201 · Secundária", "withdrawal")),
+      )
+      .mockResolvedValue(response([]));
+    render(<CheckoutOperationsApi />);
+    await screen.findByText("Chave J-201 · Primária");
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /Chave J-201/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /termo de responsabilidade/ }));
+    const submit = screen.getByRole("button", { name: /Confirmar Retirada/ });
+    expect((submit as HTMLButtonElement).disabled).toBe(true);
+
+    const select = screen.getByLabelText("Chave entregue");
+    expect(screen.queryByRole("option", { name: "Primária de outra sala" })).toBeNull();
+    fireEvent.change(select, { target: { value: "32" } });
+    expect((submit as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(submit);
+
+    expect(await screen.findByText("Retirada registrada")).toBeTruthy();
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({
+      itemId: "20",
+      keyId: "32",
+    });
+  });
+});
+
 describe("Devolução pela API (tela 11)", () => {
-  it("lista itens em posse e registra a devolução com a condição na observação", async () => {
+  it("lista itens em posse e registra a devolução com a condição", async () => {
     fetchMock
       .mockResolvedValueOnce(response([request]))
       .mockResolvedValueOnce(response({ ...movement("10", "Chave J-201", "return"), wasLate: true }))
@@ -141,7 +203,7 @@ describe("Devolução pela API (tela 11)", () => {
     expect(JSON.parse(options.body)).toEqual({
       requestId: "42",
       itemId: "10",
-      notes: "Condição: Avariado",
+      condition: "AVARIADO",
     });
     expect(screen.getByText(/1 item\(ns\) em atraso/)).toBeTruthy();
   });

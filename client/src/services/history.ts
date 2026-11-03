@@ -7,6 +7,7 @@ const recordSchema = z
     by: z.string().nullable(),
     responsible: z.string().nullable(),
     notes: z.string().nullable(),
+    condition: z.string().nullish(),
   })
   .nullable();
 const historyItemSchema = z.object({
@@ -30,6 +31,7 @@ const historyItemSchema = z.object({
     .nullable(),
   withdrawal: recordSchema,
   return: recordSchema,
+  keyDelivered: z.string().nullish(),
   wasLate: z.boolean(),
 });
 export type HistoryItem = z.infer<typeof historyItemSchema>;

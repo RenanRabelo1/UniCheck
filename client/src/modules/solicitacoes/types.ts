@@ -20,6 +20,7 @@ export type CatalogItem = {
   id: string;
   name: string;
   detail: string | null;
+  category?: string | null;
   /** Só chaves: a sala a que pertencem. */
   roomId: string | null;
   total: number;

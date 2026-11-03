@@ -1,9 +1,11 @@
+import { randomUUID } from 'node:crypto'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { config } from '../../config.js'
 import type { Usuario } from '../../database/types.js'
 import { HttpError } from '../../middlewares/httpError.js'
 import { usuarioRepository, type PerfilCadastro } from '../usuarios/usuario.repository.js'
+import { sessaoRepository } from './sessao.repository.js'
 import { toPerfilApi, toUsuarioSessao } from '../usuarios/usuario.mapper.js'
 import type { LoginInput, RegisterInput } from './auth.validation.js'
 
@@ -27,6 +29,7 @@ const perfilLabel: Record<Usuario['perfil'], string> = {
 function startSession(usuario: Usuario) {
   const token = jwt.sign({ role: usuario.perfil }, config.jwtSecret, {
     subject: usuario.id,
+    jwtid: randomUUID(),
     expiresIn: config.jwtExpiresIn,
     algorithm: 'HS256',
   })
@@ -48,7 +51,21 @@ export const authService = {
       throw new HttpError(401, `Este acesso é de outro perfil. Selecione a aba "${perfilLabel[usuario.perfil]}".`)
     }
 
+    // Regra do plano: aluno entra com o e-mail institucional; os demais perfis, com a matrícula.
+    const usouEmail = identifier.includes('@')
+    if (role === 'student' && !usouEmail) throw new HttpError(401, 'Aluno entra com o e-mail institucional.')
+    if (role !== undefined && role !== 'student' && usouEmail) throw new HttpError(401, 'Este perfil entra com a matrícula.')
+
     return startSession(usuario)
+  },
+
+  /** Sessão atual, para o front-end voltar ao ponto em que estava depois de recarregar a página. */
+  me(usuario: Usuario) {
+    return toUsuarioSessao(usuario)
+  },
+
+  async logout(sessao: { jti: string; expiraEm: Date } | undefined) {
+    if (sessao) await sessaoRepository.revogar(sessao.jti, sessao.expiraEm)
   },
 
   /** Cria a conta (ativa na hora) e já devolve a sessão, como se a pessoa tivesse feito login. */

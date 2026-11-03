@@ -14,7 +14,7 @@ type Props = { requestId: string | null; onBackToPending: () => void };
 export function RequestAnalysisApi({ requestId, onBackToPending }: Props) {
   if (!requestId)
     return (
-      <main className="request-analysis">
+      <section className="request-analysis">
         <h1>Análise da solicitação</h1>
         <p>Selecione um pedido na lista de pendências.</p>
         <button
@@ -24,7 +24,7 @@ export function RequestAnalysisApi({ requestId, onBackToPending }: Props) {
         >
           Ver pendências
         </button>
-      </main>
+      </section>
     );
   return (
     <AnalysisLoader
@@ -52,7 +52,7 @@ function AnalysisLoader({
       />
     );
   return (
-    <main className="request-analysis">
+    <section className="request-analysis">
       <button
         className="request-analysis__back"
         type="button"
@@ -70,7 +70,7 @@ function AnalysisLoader({
           </button>
         </div>
       )}
-    </main>
+    </section>
   );
 }
 function AnalysisEditor({
@@ -123,7 +123,7 @@ function AnalysisEditor({
     }
   }
   return (
-    <main
+    <section
       className="request-analysis admin-requests-api"
       aria-labelledby="analysis-title"
     >
@@ -330,6 +330,6 @@ function AnalysisEditor({
           Voltar à lista de pendências
         </button>
       </footer>
-    </main>
+    </section>
   );
 }

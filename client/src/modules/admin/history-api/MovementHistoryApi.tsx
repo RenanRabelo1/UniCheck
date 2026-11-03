@@ -257,6 +257,12 @@ export function MovementHistoryApi() {
               <dt>Retirada</dt>
               <dd>{describe(selected.withdrawal)}</dd>
             </div>
+            {selected.keyDelivered && (
+              <div>
+                <dt>Chave entregue</dt>
+                <dd>{selected.keyDelivered}</dd>
+              </div>
+            )}
             {selected.withdrawal?.notes && (
               <div>
                 <dt>Observação da retirada</dt>
@@ -267,6 +273,12 @@ export function MovementHistoryApi() {
               <dt>Devolução</dt>
               <dd>{describe(selected.return)}</dd>
             </div>
+            {selected.return?.condition && (
+              <div>
+                <dt>Condição na devolução</dt>
+                <dd>{selected.return.condition}</dd>
+              </div>
+            )}
             {selected.return?.notes && (
               <div>
                 <dt>Observação da devolução</dt>

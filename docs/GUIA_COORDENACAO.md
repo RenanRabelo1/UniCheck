@@ -34,7 +34,7 @@ npm.cmd run migrate --workspace=@unicheck/server
 npm.cmd run db:check --workspace=@unicheck/server
 ```
 
-A migration `006_trigger_autorizacao_completa.sql` precisa ser aplicada: ela troca os dois triggers de chave. Em um banco novo de desenvolvimento, carregue os exemplos com:
+As migrations 006 e 007 precisam ser aplicadas: a 006 troca os dois triggers de chave, e a 007 guarda as sessões encerradas. Em um banco novo de desenvolvimento, carregue os exemplos com:
 
 ```powershell
 npm.cmd run db:seed --workspace=@unicheck/server
@@ -97,7 +97,19 @@ Todas exigem token Bearer. Detalhe ausente retorna 404; sem autenticação 401; 
 | 15. Autorizações | `GET/POST /admin/autorizacoes`, `PATCH /admin/autorizacoes/:id`, `GET /admin/autorizacoes/opcoes`, `GET/POST /admin/projetos`, `PATCH /admin/projetos/:id` | Aluno e professor são escolhidos entre usuários reais. Coordenador e data vêm do servidor. Sem edição e histórico por autorização: inative e crie outra. |
 | 16. Histórico | `GET /movimentacoes/historico?search=&material=&room=&status=&from=&to=` | Uma linha por item, inclusive sem movimentação. O período usa a data de utilização. Sem imprimir e exportar. |
 
-Escrita é exclusiva da coordenação, exceto retirada e devolução. Materiais, salas, chaves, projetos e autorizações só são inativados.
+Escrita é exclusiva da coordenação, inclusive retirada e devolução. Materiais, salas, chaves, projetos e autorizações só são inativados.
+
+### Login e sessão
+
+- Aluno entra com o e-mail institucional; professor e coordenador, com a matrícula.
+- Com a API real, a tela de login não mostra contas de teste. Use as da tabela acima digitando os dados.
+- Depois de 10 senhas erradas na mesma conta e origem, o login fica bloqueado por 15 minutos.
+- Sair invalida o token no servidor. Recarregar a página mantém a sessão e a tela atual.
+
+### Retirada e devolução
+
+- Na retirada de chave, informe a chave física entregue. Ela pode ser outra chave ativa da mesma sala, e o item passa a apontar para ela.
+- Na devolução, a condição é obrigatória e fica gravada separada das observações. As duas informações aparecem no Histórico.
 
 ### Autorização do aluno
 
@@ -150,7 +162,8 @@ Continuam abertas, e as telas mostram os dados como estão:
 - `POST /auth/register` cria Coordenador para qualquer e-mail;
 - a mesma chave pode ser retirada duas vezes, porque a disponibilidade só compara a janela prevista na mesma data;
 - aluno, mesmo sem autorização, consegue pedir material;
-- `termo_responsabilidade` nunca é gravado;
-- `tipo_chave_entregue` e `condicao_devolucao` nunca são gravados; a condição vai como texto nas observações.
+- `termo_responsabilidade` nunca é gravado.
 
-Decisões pendentes: quem confirma a retirada (funcionário ou coordenador, e `FUNCIONARIO` não existe no ENUM do banco), se professor pode pedir chave, e OBS01 e OBS02 do plano.
+Quem confirma retirada e devolução é o Coordenador do CCT (RN09).
+
+Decisões pendentes: se professor pode pedir chave, e OBS01 e OBS02 do plano.

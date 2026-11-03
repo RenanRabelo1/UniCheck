@@ -131,14 +131,11 @@ function ReturnForm({
     let late = 0;
     try {
       for (const item of checkedItems) {
-        const label =
-          conditions.find((c) => c.value === drafts[item.id].condition)?.label ?? "";
-        // O servidor guarda só observação livre: a condição vai nela, junto da nota digitada.
-        const text = `Condição: ${label}${notes.trim() ? ` — ${notes.trim()}` : ""}`;
         const movement = await registerReturn({
           requestId: request.id,
           itemId: item.id,
-          notes: text,
+          condition: drafts[item.id].condition as ReturnCondition,
+          notes: notes.trim() || undefined,
         });
         registered.push(movement.itemName);
         if (movement.wasLate) late += 1;
