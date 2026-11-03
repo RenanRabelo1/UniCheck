@@ -1,7 +1,6 @@
 import { withTransaction } from '../../database/sql.js'
 import type { TipoMovimentacao, Usuario } from '../../database/types.js'
 import { HttpError } from '../../middlewares/httpError.js'
-import { todayIso } from '../../utils/dates.js'
 import { alertaRepository } from '../alertas/alerta.repository.js'
 import { solicitacaoRepository } from '../solicitacoes/solicitacao.repository.js'
 import { usuarioRepository } from '../usuarios/usuario.repository.js'
@@ -20,9 +19,8 @@ export const movimentacaoService = {
       if (item.status !== 'APROVADO' && item.status !== 'RESERVADO') {
         throw new HttpError(409, 'Só é possível retirar itens aprovados.')
       }
-      if (solicitacao.dataUtilizacao !== todayIso(now)) {
-        throw new HttpError(409, `A retirada só pode ser registrada no dia de utilização (${solicitacao.dataUtilizacao}).`)
-      }
+      // A retirada pode ser registrada em qualquer data: a data da solicitação é só a previsão,
+      // e o horário real fica salvo na movimentação.
 
       await solicitacaoRepository.updateItem(item.id, { status: 'RETIRADO', atualizadoEm: now }, connection)
       await solicitacaoRepository.refreshStatusGeral(solicitacao.id, connection)

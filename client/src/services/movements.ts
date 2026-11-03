@@ -46,7 +46,7 @@ function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   return result.data;
 }
 
-/** Registra a retirada de UM item. O servidor exige o termo aceito e o dia de utilização. */
+/** Registra a retirada de UM item. O servidor exige o termo aceito; a data da retirada é livre. */
 export async function registerWithdrawal(
   input: WithdrawalInput,
 ): Promise<Movement> {
