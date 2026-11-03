@@ -45,10 +45,12 @@ describe('POST /movimentacoes/retiradas', () => {
     expect(response.body.message).toBe('É necessário o aceite do termo de responsabilidade.')
   })
 
-  it('só retira no dia de utilização', async () => {
-    const ctx = await start('2026-10-05T12:00:00-03:00')
-    const response = await request(ctx.app).post('/movimentacoes/retiradas').set('Authorization', ctx.coord).send(retirada)
-    expect(response.status).toBe(409)
+  it('registra a retirada mesmo fora do dia previsto na solicitação', async () => {
+    for (const agora of ['2026-10-05T12:00:00-03:00', '2026-10-08T15:00:00-03:00']) {
+      const ctx = await start(agora)
+      const response = await request(ctx.app).post('/movimentacoes/retiradas').set('Authorization', ctx.coord).send(retirada)
+      expect(response.status).toBe(201)
+    }
   })
 
   it('não retira item que ainda está pendente nem item inexistente', async () => {

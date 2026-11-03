@@ -92,7 +92,7 @@ function toMetrics({ summary }: AdminDashboardData): AdminMetric[] {
       value: summary.withdrawnItems,
       badge: "",
       description: "Em posse dos solicitantes agora.",
-      footer: "Retiradas e devoluções",
+      footer: "Ver itens em posse",
       icon: "key",
       tone: "secondary",
     },

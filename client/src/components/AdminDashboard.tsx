@@ -44,7 +44,7 @@ const navigation: {
 const metricActions: Record<AdminMetric["id"], AdminAction> = {
   pending: "review-requests",
   approved: "operations",
-  "checked-out": "operations",
+  "checked-out": "register-return",
   returns: "register-return",
   alerts: "alerts",
 };
