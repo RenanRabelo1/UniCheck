@@ -4,11 +4,11 @@
 
 React/Vite (`client/`) → API REST Node.js/Express (`server/`) → MySQL 8.0.16 ou superior.
 
-A migração para MySQL está no código recebido da equipe: conexão em `server/src/database/connection.ts`, migrations 001–005, seed SQL e repositories SQL. Os documentos anteriores que descreviam JSON estavam desatualizados. O banco é local a cada integrante; não acompanha o código do GitHub.
+A migração para MySQL está no código recebido da equipe: conexão em `server/src/database/connection.ts`, migrations 001–007, seed SQL e repositories SQL. Os documentos anteriores que descreviam JSON estavam desatualizados. O banco é local a cada integrante; não acompanha o código do GitHub.
 
 ## Integração das telas
 
-Com `VITE_DATA_SOURCE=api`, cadastro/login, Nova solicitação, Minhas solicitações e detalhes usam a API. Esta entrega acrescenta Pendências e Análise da solicitação para coordenação. As demais telas administrativas e os indicadores do painel administrativo continuam demonstrativos. O modo `mock` preserva as telas de demonstração.
+Com `VITE_DATA_SOURCE=api`, todas as telas usam a API. O modo `mock` preserva as telas de demonstração. O passo a passo está em `docs/GUIA_COORDENACAO.md`, e a publicação, em `docs/DEPLOY.md`.
 
 - `client/src/app/AppShell.tsx`: sessão e navegação; escolhe os módulos reais ou demonstrativos.
 - `client/src/services/api.ts`: HTTP e tratamento de erros; `adminRequests.ts`: contratos e operações administrativas.

@@ -21,12 +21,15 @@ export type WithdrawalInput = {
   requestId: string;
   itemId: string;
   termAccepted: boolean;
+  /** Chave física entregue; obrigatória quando o item é uma chave. */
+  keyId?: string;
   responsibleName?: string;
   notes?: string;
 };
 export type ReturnInput = {
   requestId: string;
   itemId: string;
+  condition: "INTEGRO" | "AVARIADO" | "INCOMPLETO";
   responsibleName?: string;
   notes?: string;
 };

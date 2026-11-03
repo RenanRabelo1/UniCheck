@@ -87,7 +87,7 @@ describe('GET /movimentacoes/historico', () => {
     await request(ctx.app)
       .post('/movimentacoes/devolucoes')
       .set('Authorization', ctx.coord)
-      .send({ requestId: '1003', itemId: '1004' })
+      .send({ requestId: '1003', itemId: '1004', condition: 'INTEGRO' })
 
     const { body } = await historico(ctx)
     const item = body.find((linha: { itemId: string }) => linha.itemId === '1004')

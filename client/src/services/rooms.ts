@@ -38,6 +38,13 @@ export async function listRoomsAndKeys(
   };
 }
 
+export async function listKeys(signal?: AbortSignal): Promise<RoomKey[]> {
+  return parseResponse(
+    z.array(keySchema),
+    await getJson("/admin/chaves", sessionToken(), signal),
+  );
+}
+
 export async function createRoom(input: {
   code: string;
   name: string;

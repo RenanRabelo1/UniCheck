@@ -81,6 +81,7 @@ export interface ItemSolicitacao {
   motivoRecusa?: string
   /** Quem aprovou ou recusou o item. */
   decididoPorId?: string
+  decididoEm?: string
 }
 
 export interface Solicitacao {
@@ -102,6 +103,8 @@ export interface Solicitacao {
 
 export type TipoMovimentacao = 'RETIRADA' | 'DEVOLUCAO'
 
+export type CondicaoDevolucao = 'INTEGRO' | 'AVARIADO' | 'INCOMPLETO'
+
 /** Registro presencial feito pela Secretaria. Serve de histórico de uso. */
 export interface Movimentacao {
   id: string
@@ -115,6 +118,7 @@ export interface Movimentacao {
   responsavel: string
   registradoEm: string
   observacao?: string
+  condicao?: CondicaoDevolucao
 }
 
 /** Alerta gerado quando um item não é devolvido até 22:40. */

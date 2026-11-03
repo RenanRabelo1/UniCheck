@@ -162,7 +162,7 @@ export function StudentDashboard({
         onLogout={onLogout}
       />
 
-      <main className="student-container student-content">
+      <main className="student-container student-content" id="conteudo" tabIndex={-1}>
         <section className="student-welcome" aria-labelledby="student-title">
           <div className="student-decoration" aria-hidden="true">
             <span />

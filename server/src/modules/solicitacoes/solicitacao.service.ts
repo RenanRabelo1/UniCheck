@@ -117,6 +117,7 @@ export const solicitacaoService = {
         id: material.id,
         name: material.nome,
         detail: detalheExibido(material) ?? null,
+        category: material.categoria,
         roomId: null as string | null,
         total: material.quantidadeTotal,
         available: livre(material.quantidadeTotal, ocupadoMateriais.get(material.id)),
@@ -132,6 +133,7 @@ export const solicitacaoService = {
             id: chave.id,
             name: `Chave ${sala.codigo} · ${ROTULO_CHAVE[chave.tipo]}`,
             detail: sala.nome,
+            category: null as string | null,
             roomId: sala.id as string | null,
             total: 1,
             available: livre(1, ocupadoChaves.get(chave.id)),
@@ -211,8 +213,20 @@ export const solicitacaoService = {
     const detail = await solicitacaoRepository.detailsByUsuario(id, usuario.id)
     // Mesmo erro para "não existe" e "é de outra pessoa": não revela a existência.
     if (!detail) throw new HttpError(404, 'Solicitação não encontrada.')
+
+    const decisores = new Map<string, string>()
+    for (const id of new Set(detail.solicitacao.itens.flatMap((item) => item.decididoPorId ?? []))) {
+      const decisor = await usuarioRepository.findById(id)
+      if (decisor) decisores.set(id, decisor.nome)
+    }
+    const view = toSolicitacaoView(detail.solicitacao, detail.salas)
+
     return {
-      ...toSolicitacaoView(detail.solicitacao, detail.salas),
+      ...view,
+      items: view.items.map((item, index) => {
+        const decididoPorId = detail.solicitacao.itens[index]?.decididoPorId
+        return { ...item, decidedBy: (decididoPorId && decisores.get(decididoPorId)) || null }
+      }),
       requester: toRequester(usuario),
       movements: detail.movements,
     }

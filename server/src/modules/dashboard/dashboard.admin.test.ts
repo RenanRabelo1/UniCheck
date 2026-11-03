@@ -36,7 +36,7 @@ describe('GET /dashboard/admin', () => {
     await request(ctx.app)
       .post('/movimentacoes/devolucoes')
       .set('Authorization', ctx.coord)
-      .send({ requestId: '1003', itemId: '1004' })
+      .send({ requestId: '1003', itemId: '1004', condition: 'INTEGRO' })
     expect((await painel(ctx)).body.summary).toMatchObject({ withdrawnItems: 3, pendingReturns: 3, openAlerts: 3 })
   })
 
@@ -74,7 +74,7 @@ describe('GET /dashboard/admin', () => {
     await request(ctx.app)
       .post('/movimentacoes/devolucoes')
       .set('Authorization', ctx.coord)
-      .send({ requestId: '1005', itemId: '1008' })
+      .send({ requestId: '1005', itemId: '1008', condition: 'INTEGRO' })
     const finalizada = (await painel(ctx)).body.recentRequests.find((item: { id: string }) => item.id === '1005')
     expect(finalizada.statusLabel).toBe('Finalizada')
   })

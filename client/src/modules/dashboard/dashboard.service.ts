@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { getJson } from '../../services/api'
+import { getJson, isApiMode } from '../../services/api'
 import { getMockDashboard } from './dashboard.mock'
 import { DashboardData, DashboardService } from './dashboard.types'
 
@@ -25,11 +25,10 @@ const dashboardSchema = z.object({
   })),
 })
 
-const useApi = import.meta.env.VITE_DATA_SOURCE === 'api'
 
 export const dashboardService: DashboardService = {
   async getDashboard(session) {
-    if (!useApi) {
+    if (!isApiMode()) {
       return getMockDashboard(session)
     }
 

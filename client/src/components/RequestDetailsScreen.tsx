@@ -50,7 +50,7 @@ export function RequestDetailsScreen({
     <div className="request-details-page">
       <AppTopNav {...nav} active="requests" />
 
-      <main className="request-details-container request-details-content">
+      <main className="request-details-container request-details-content" id="conteudo" tabIndex={-1}>
         <nav
           className="request-details-breadcrumb"
           aria-label="Navegação estrutural"
@@ -205,6 +205,12 @@ export function RequestDetailsScreen({
                           {item.return.dueDate}.
                         </p>
                       )}
+
+                    {item.decision && (
+                      <p className="request-details-item-notice">
+                        Decisão de {item.decision.by} em {item.decision.date}.
+                      </p>
+                    )}
 
                     {item.status === "RECUSADO" && item.rejectionReason && (
                       <p className="request-details-item-notice rejected">

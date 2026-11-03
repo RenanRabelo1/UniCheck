@@ -67,7 +67,7 @@ export function UserDashboard({
     },
   ];
   return (
-    <main className="dashboard-page">
+    <main className="dashboard-page" id="conteudo" tabIndex={-1}>
       <AppTopNav
         user={user}
         active="home"
@@ -162,7 +162,7 @@ export function UserDashboard({
           </div>
           <div className="activity-list">
             {recentActivity.map((item) => (
-              <article className="activity-row" key={item.title}>
+              <article className="activity-row" key={item.id}>
                 <span className="activity-icon">{item.icon}</span>
                 <div>
                   <h3>{item.title}</h3>

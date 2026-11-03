@@ -1,4 +1,5 @@
-import { ROTULO_STATUS } from '../solicitacoes/solicitacao.status.js'
+import { ROTULO_TIPO_CHAVE } from '../chaves/chave.mapper.js'
+import { ROTULO_CONDICAO, ROTULO_STATUS } from '../solicitacoes/solicitacao.status.js'
 import type { ItemHistorico, RegistroMovimento } from './movimentacao.repository.js'
 import type { Movimentacao } from '../../database/types.js'
 
@@ -13,12 +14,19 @@ export function toMovimentacaoView(movimentacao: Movimentacao, registradoPorNome
     registeredBy: registradoPorNome,
     registeredAt: movimentacao.registradoEm,
     notes: movimentacao.observacao ?? null,
+    condition: movimentacao.condicao ? ROTULO_CONDICAO[movimentacao.condicao] : null,
   }
 }
 
 function toRegistroView(registro: RegistroMovimento | null) {
   return (
-    registro && { at: registro.em, by: registro.por, responsible: registro.responsavel, notes: registro.observacao }
+    registro && {
+      at: registro.em,
+      by: registro.por,
+      responsible: registro.responsavel,
+      notes: registro.observacao,
+      condition: registro.condicao ? ROTULO_CONDICAO[registro.condicao] : null,
+    }
   )
 }
 
@@ -44,6 +52,7 @@ export function toHistoricoView(item: ItemHistorico) {
       : null,
     withdrawal: toRegistroView(item.retirada),
     return: toRegistroView(item.devolucao),
+    keyDelivered: item.chaveEntregue ? ROTULO_TIPO_CHAVE[item.chaveEntregue] : null,
     wasLate: item.teveAtraso,
   }
 }

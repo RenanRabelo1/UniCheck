@@ -1,6 +1,6 @@
 import { isApiMode } from "../../services/api";
-import { loginApi } from "../../services/auth";
-import { useState } from "react";
+import { loginApi, logoutApi, restoreSession } from "../../services/auth";
+import { useEffect, useState } from "react";
 import {
   createDemoSession,
   type DemoRole,
@@ -18,11 +18,24 @@ export function useDemoSession() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<LoginMessageType>("error");
   const [session, setSession] = useState<DemoSession | null>(null);
+  // Com token guardado, a tela de login só aparece se ele não valer mais.
+  const [restoring, setRestoring] = useState(
+    () => isApiMode() && Boolean(sessionStorage.getItem("unicheck_token")),
+  );
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("unicheck_token");
+    if (!isApiMode() || !token) return;
+    restoreSession(token)
+      .then(setSession)
+      .catch(() => sessionStorage.removeItem("unicheck_token"))
+      .finally(() => setRestoring(false));
+  }, []);
 
   const isStudent = role === "student";
-  // Todos entram com o e-mail institucional; a matrícula também é aceita.
-  const identifierLabel = "E-mail institucional ou matrícula";
-  const identifierPlaceholder = "seu.email@unifor.br";
+  // Regra do plano: aluno entra com o e-mail institucional; os demais perfis, com a matrícula.
+  const identifierLabel = isStudent ? "E-mail institucional" : "Matrícula";
+  const identifierPlaceholder = isStudent ? "seu.email@unifor.br" : "2048819";
 
   function changeRole(nextRole: DemoRole) {
     setRole(nextRole);
@@ -92,8 +105,11 @@ export function useDemoSession() {
   }
 
   function logout() {
+    const token = sessionStorage.getItem("unicheck_token");
+    if (isApiMode() && token) void logoutApi(token);
     sessionStorage.removeItem("unicheck_token");
     setSession(null);
+    setIdentifier("");
     setPassword("");
     setMessage("Sessão encerrada.");
     setMessageType("success");
@@ -107,6 +123,7 @@ export function useDemoSession() {
     message,
     messageType,
     session,
+    restoring,
     isStudent,
     identifierLabel,
     identifierPlaceholder,

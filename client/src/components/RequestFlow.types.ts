@@ -46,6 +46,7 @@ export type RequestItem = {
   status: RequestItemStatus;
   code?: string;
   rejectionReason?: string;
+  decision?: { by: string; date: string };
   pickup?: {
     date: string;
     attendant: string;

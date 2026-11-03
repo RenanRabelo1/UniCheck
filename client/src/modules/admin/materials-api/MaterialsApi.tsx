@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent, type ReactNode } from "react";
 
+import { useDialogFocus } from "../../../app/useDialogFocus";
 import {
   createMaterial,
   listMaterials,
@@ -441,9 +442,11 @@ function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
+  const dialogRef = useDialogFocus<HTMLElement>(onClose);
   return (
     <div className="materials-management__backdrop" role="presentation">
       <section
+        ref={dialogRef}
         className="materials-management__modal"
         role="dialog"
         aria-modal="true"

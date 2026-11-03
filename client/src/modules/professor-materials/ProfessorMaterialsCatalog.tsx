@@ -1,50 +1,54 @@
 import { useMemo, useState } from 'react';
 
-type MaterialCategory = 'Todos' | 'Eletrônicos' | 'Apoio' | 'Audiovisual';
-
-type Material = {
+export type CatalogMaterial = {
   id: string;
   name: string;
-  category: Exclude<MaterialCategory, 'Todos'>;
+  category: string;
   description: string;
   available: number;
   unit: string;
 };
 
-export type ProfessorMaterialSelection = Pick<Material, "id" | "name"> & {
+export type ProfessorMaterialSelection = Pick<CatalogMaterial, "id" | "name"> & {
   quantity: number;
 };
 
 type ProfessorMaterialsCatalogProps = {
   onUseSelection?: (selection: ProfessorMaterialSelection) => void;
+  /** Cadastro real. Sem ele, a tela mostra os exemplos do modo demonstrativo. */
+  materials?: CatalogMaterial[];
+  onNewRequest?: () => void;
 };
 
-const materials: Material[] = [
+const demoMaterials: CatalogMaterial[] = [
   { id: 'notebook', name: 'Notebook', category: 'Eletrônicos', description: 'Notebook para atividades em sala ou laboratório.', available: 8, unit: 'unidades' },
   { id: 'projector', name: 'Projetor multimídia', category: 'Audiovisual', description: 'Projetor com cabo HDMI para apresentações.', available: 2, unit: 'unidades' },
   { id: 'extension', name: 'Extensão elétrica', category: 'Apoio', description: 'Extensão de 10 metros para apoio à aula.', available: 12, unit: 'unidades' },
   { id: 'webcam', name: 'Webcam', category: 'Eletrônicos', description: 'Webcam USB para gravações e aulas híbridas.', available: 0, unit: 'unidades' },
 ];
 
-const categories: MaterialCategory[] = ['Todos', 'Eletrônicos', 'Apoio', 'Audiovisual'];
-
 export function ProfessorMaterialsCatalog({
   onUseSelection,
+  materials,
+  onNewRequest,
 }: ProfessorMaterialsCatalogProps) {
+  const live = materials !== undefined;
+  const catalog = materials ?? demoMaterials;
+  const categories = ['Todos', ...new Set(catalog.map((material) => material.category))];
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<MaterialCategory>('Todos');
+  const [category, setCategory] = useState('Todos');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
-  const filteredMaterials = useMemo(() => materials.filter((material) => {
+  const filteredMaterials = useMemo(() => catalog.filter((material) => {
     const matchesQuery = `${material.name} ${material.description}`.toLowerCase().includes(query.toLowerCase());
     const matchesCategory = category === 'Todos' || material.category === category;
     return matchesQuery && matchesCategory;
-  }), [category, query]);
+  }), [catalog, category, query]);
 
-  const selectedMaterial = materials.find((material) => material.id === selectedId);
+  const selectedMaterial = catalog.find((material) => material.id === selectedId);
 
-  function selectMaterial(material: Material) {
+  function selectMaterial(material: CatalogMaterial) {
     setSelectedId(material.id);
     setQuantity(1);
   }
@@ -57,9 +61,16 @@ export function ProfessorMaterialsCatalog({
           <h1 id="professor-materials-title" style={{ margin: 0, fontSize: 28 }}>Materiais disponíveis</h1>
           <p style={{ margin: '8px 0 0', color: '#53627a' }}>Consulte o catálogo e monte sua seleção para a próxima solicitação.</p>
         </div>
-        <div role="status" style={{ maxWidth: 330, padding: '10px 14px', borderRadius: 10, background: '#fff7df', color: '#795d09', fontSize: 13 }}>
-          Seleção demonstrativa: não há reserva, envio ou persistência nesta tela.
-        </div>
+        {live ? (
+          <div style={{ maxWidth: 330, display: 'grid', gap: 10, justifyItems: 'start' }}>
+            <p style={{ margin: 0, color: '#53627a', fontSize: 13 }}>A disponibilidade por horário é conferida na Nova solicitação.</p>
+            <button type="button" onClick={onNewRequest} style={{ padding: '10px 14px', border: 0, borderRadius: 8, background: '#3867d6', color: 'white', cursor: 'pointer', fontWeight: 700 }}>Nova solicitação</button>
+          </div>
+        ) : (
+          <div role="status" style={{ maxWidth: 330, padding: '10px 14px', borderRadius: 10, background: '#fff7df', color: '#795d09', fontSize: 13 }}>
+            Seleção demonstrativa: não há reserva, envio ou persistência nesta tela.
+          </div>
+        )}
       </header>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
@@ -69,7 +80,7 @@ export function ProfessorMaterialsCatalog({
         </label>
         <label style={{ flex: '0 1 220px' }}>
           <span style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 700 }}>Categoria</span>
-          <select value={category} onChange={(event) => setCategory(event.target.value as MaterialCategory)} aria-label="Filtrar por categoria" style={{ width: '100%', padding: '11px 12px', border: '1px solid #cbd3df', borderRadius: 8, background: 'white' }}>
+          <select value={category} onChange={(event) => setCategory(event.target.value)} aria-label="Filtrar por categoria" style={{ width: '100%', padding: '11px 12px', border: '1px solid #cbd3df', borderRadius: 8, background: 'white' }}>
             {categories.map((item) => <option key={item}>{item}</option>)}
           </select>
         </label>
@@ -82,7 +93,7 @@ export function ProfessorMaterialsCatalog({
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'start' }}><h2 style={{ margin: 0, fontSize: 18 }}>{material.name}</h2><span style={{ color: material.available > 0 ? '#176b4d' : '#a33d3d', fontSize: 12, fontWeight: 700 }}>{material.available > 0 ? 'Disponível' : 'Indisponível'}</span></div>
             <p style={{ minHeight: 42, color: '#53627a', fontSize: 14, lineHeight: 1.45 }}>{material.description}</p>
             <p style={{ margin: '0 0 16px', fontSize: 14 }}><strong>{material.available}</strong> {material.unit}</p>
-            <button type="button" disabled={material.available === 0} onClick={() => selectMaterial(material)} style={{ width: '100%', padding: '10px 12px', border: 0, borderRadius: 8, background: material.available === 0 ? '#e8ebf0' : '#3867d6', color: material.available === 0 ? '#778196' : 'white', cursor: material.available === 0 ? 'not-allowed' : 'pointer', fontWeight: 700 }}>{isSelected ? 'Material selecionado' : 'Selecionar material'}</button>
+            {!live && <button type="button" disabled={material.available === 0} onClick={() => selectMaterial(material)} style={{ width: '100%', padding: '10px 12px', border: 0, borderRadius: 8, background: material.available === 0 ? '#e8ebf0' : '#3867d6', color: material.available === 0 ? '#778196' : 'white', cursor: material.available === 0 ? 'not-allowed' : 'pointer', fontWeight: 700 }}>{isSelected ? 'Material selecionado' : 'Selecionar material'}</button>}
           </article>;
         })}
       </div>}

@@ -328,6 +328,7 @@ it("identifica como reais apenas os módulos administrativos integrados", () => 
 });
 
 it("integra login da coordenação, fila, seleção e retorno à fila atualizada", async () => {
+  sessionStorage.clear();
   fetchMock
     .mockResolvedValueOnce(
       response({
@@ -357,9 +358,12 @@ it("integra login da coordenação, fila, seleção e retorno à fila atualizada
     .mockResolvedValueOnce(response([]));
   render(<App />);
   fireEvent.click(screen.getByRole("tab", { name: "Coordenador CCT" }));
-  fireEvent.change(screen.getByLabelText("E-mail institucional ou matrícula"), {
-    target: { value: "18024900" },
-  });
+  fireEvent.change(
+    screen.getByLabelText(/^(Matrícula|E-mail institucional)$/),
+    {
+      target: { value: "18024900" },
+    },
+  );
   fireEvent.change(screen.getByLabelText(/Senha/), {
     target: { value: "unicheck123" },
   });

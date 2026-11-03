@@ -82,6 +82,7 @@ CREATE TABLE solicitacao (
     local_utilizacao VARCHAR(180) NOT NULL,
     observacoes TEXT,
     status_geral ENUM('PENDENTE', 'APROVADA', 'PARCIAL', 'RECUSADA', 'FINALIZADA', 'CANCELADA') NOT NULL DEFAULT 'PENDENTE',
+    id_sala BIGINT UNSIGNED NOT NULL,
     CONSTRAINT uq_solicitacao_protocolo UNIQUE (numero_protocolo),
     CONSTRAINT fk_solicitacao_usuario
         FOREIGN KEY (id_usuario_solicitante) REFERENCES usuario (id_usuario),
@@ -115,6 +116,7 @@ CREATE TABLE material (
     quantidade_total INT UNSIGNED,
     quantidade_disponivel INT UNSIGNED,
     status ENUM('ATIVO', 'INATIVO', 'MANUTENCAO') NOT NULL DEFAULT 'ATIVO',
+    detalhe VARCHAR(100) NULL,
     CONSTRAINT uq_material_patrimonio UNIQUE (patrimonio),
     CONSTRAINT ck_material_controle CHECK (
         (tipo_controle = 'INDIVIDUAL' AND patrimonio IS NOT NULL
@@ -152,12 +154,15 @@ CREATE TABLE item_solicitado (
     id_chave BIGINT UNSIGNED NULL,
     id_coordenador_decisao BIGINT UNSIGNED NULL,
     quantidade_solicitada INT UNSIGNED NOT NULL DEFAULT 1,
-    status_item ENUM('PENDENTE', 'APROVADO', 'RECUSADO', 'RETIRADO', 'DEVOLVIDO', 'CANCELADO') NOT NULL DEFAULT 'PENDENTE',
+    status_item ENUM('PENDENTE', 'APROVADO', 'RESERVADO', 'RECUSADO', 'RETIRADO', 'ATRASADO', 'DEVOLVIDO', 'CANCELADO') NOT NULL DEFAULT 'PENDENTE',
     motivo_recusa VARCHAR(255),
     data_hora_decisao DATETIME,
     tipo_chave_entregue ENUM('PRIMARIA', 'SECUNDARIA'),
     condicao_devolucao VARCHAR(255),
     observacoes TEXT,
+    nome_item VARCHAR(150) NOT NULL,
+    detalhe_item VARCHAR(100) NULL,
+    data_hora_atualizacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_item_solicitacao
         FOREIGN KEY (id_solicitacao) REFERENCES solicitacao (id_solicitacao),
     CONSTRAINT fk_item_material
@@ -181,6 +186,7 @@ CREATE TABLE movimentacao (
     data_hora_real DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     observacao TEXT,
     condicao_devolucao VARCHAR(255),
+    responsavel VARCHAR(150) NULL,
     CONSTRAINT fk_movimentacao_item
         FOREIGN KEY (id_item_solicitado) REFERENCES item_solicitado (id_item_solicitado),
     CONSTRAINT fk_movimentacao_coordenador
@@ -196,6 +202,14 @@ CREATE TABLE ocorrencia_atraso (
     CONSTRAINT uq_atraso_item UNIQUE (id_item_solicitado),
     CONSTRAINT fk_atraso_item
         FOREIGN KEY (id_item_solicitado) REFERENCES item_solicitado (id_item_solicitado)
+) ENGINE=InnoDB;
+
+ALTER TABLE solicitacao
+    ADD CONSTRAINT fk_solicitacao_sala FOREIGN KEY (id_sala) REFERENCES sala (id_sala);
+
+CREATE TABLE sessao_revogada (
+    jti CHAR(36) PRIMARY KEY,
+    expira_em DATETIME NOT NULL
 ) ENGINE=InnoDB;
 
 DELIMITER //

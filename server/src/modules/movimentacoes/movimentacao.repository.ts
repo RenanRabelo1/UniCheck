@@ -1,7 +1,15 @@
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise'
 import { pool } from '../../database/connection.js'
 import { parseId, type Db } from '../../database/sql.js'
-import type { Movimentacao, MovimentacaoComAutor, StatusItem, TipoItem, TipoMovimentacao } from '../../database/types.js'
+import type {
+  CondicaoDevolucao,
+  Movimentacao,
+  MovimentacaoComAutor,
+  StatusItem,
+  TipoChave,
+  TipoItem,
+  TipoMovimentacao,
+} from '../../database/types.js'
 import { fromDbDateTime, toDbDateTime } from '../../utils/dates.js'
 
 type MovimentacaoRow = RowDataPacket & {
@@ -15,6 +23,7 @@ type MovimentacaoRow = RowDataPacket & {
   responsavel: string | null
   data_hora_real: string
   observacao: string | null
+  condicao_devolucao: CondicaoDevolucao | null
 }
 
 type HistoricoRow = RowDataPacket & {
@@ -38,10 +47,18 @@ type HistoricoRow = RowDataPacket & {
   devolucao_por: string | null
   devolucao_responsavel: string | null
   devolucao_observacao: string | null
+  devolucao_condicao: CondicaoDevolucao | null
+  tipo_chave_entregue: TipoChave | null
   teve_atraso: number
 }
 
-export type RegistroMovimento = { em: string; por: string | null; responsavel: string | null; observacao: string | null }
+export type RegistroMovimento = {
+  em: string
+  por: string | null
+  responsavel: string | null
+  observacao: string | null
+  condicao: CondicaoDevolucao | null
+}
 
 export type ItemHistorico = {
   itemId: string
@@ -58,6 +75,7 @@ export type ItemHistorico = {
   decididoEm: string | null
   retirada: RegistroMovimento | null
   devolucao: RegistroMovimento | null
+  chaveEntregue: TipoChave | null
   teveAtraso: boolean
 }
 
@@ -78,7 +96,8 @@ const registro = (
   por: string | null,
   responsavel: string | null,
   observacao: string | null,
-): RegistroMovimento | null => (em ? { em: fromDbDateTime(em), por, responsavel, observacao } : null)
+  condicao: CondicaoDevolucao | null = null,
+): RegistroMovimento | null => (em ? { em: fromDbDateTime(em), por, responsavel, observacao, condicao } : null)
 
 export const movimentacaoRepository = {
   /** Um registro por item solicitado, com ou sem movimentação: é o que a tela de histórico mostra. */
@@ -118,6 +137,7 @@ export const movimentacaoRepository = {
               mr.responsavel AS retirada_responsavel, mr.observacao AS retirada_observacao,
               md.data_hora_real AS devolucao_em, ue.nome AS devolucao_por,
               md.responsavel AS devolucao_responsavel, md.observacao AS devolucao_observacao,
+              md.condicao_devolucao AS devolucao_condicao, i.tipo_chave_entregue,
               a.id_atraso IS NOT NULL AS teve_atraso
        FROM item_solicitado i
        JOIN solicitacao s ON s.id_solicitacao = i.id_solicitacao
@@ -148,7 +168,14 @@ export const movimentacaoRepository = {
       decididoPor: row.decidido_por,
       decididoEm: row.data_hora_decisao ? fromDbDateTime(row.data_hora_decisao) : null,
       retirada: registro(row.retirada_em, row.retirada_por, row.retirada_responsavel, row.retirada_observacao),
-      devolucao: registro(row.devolucao_em, row.devolucao_por, row.devolucao_responsavel, row.devolucao_observacao),
+      devolucao: registro(
+        row.devolucao_em,
+        row.devolucao_por,
+        row.devolucao_responsavel,
+        row.devolucao_observacao,
+        row.devolucao_condicao,
+      ),
+      chaveEntregue: row.tipo_chave_entregue,
       teveAtraso: row.teve_atraso === 1,
     }))
   },
@@ -168,7 +195,7 @@ export const movimentacaoRepository = {
 
     const [rows] = await db.query<MovimentacaoRow[]>(
       `SELECT m.id_movimentacao, m.tipo_movimentacao, i.id_solicitacao, m.id_item_solicitado, i.nome_item,
-              m.id_coordenador, u.nome AS autor, m.responsavel, m.data_hora_real, m.observacao
+              m.id_coordenador, u.nome AS autor, m.responsavel, m.data_hora_real, m.observacao, m.condicao_devolucao
        FROM movimentacao m
        JOIN item_solicitado i ON i.id_item_solicitado = m.id_item_solicitado
        LEFT JOIN usuario u ON u.id_usuario = m.id_coordenador
@@ -188,6 +215,7 @@ export const movimentacaoRepository = {
       responsavel: row.responsavel ?? '',
       registradoEm: fromDbDateTime(row.data_hora_real),
       observacao: row.observacao ?? undefined,
+      condicao: row.condicao_devolucao ?? undefined,
     }))
   },
 
@@ -201,13 +229,14 @@ export const movimentacaoRepository = {
       registradoPorId: string
       responsavel: string
       observacao?: string
+      condicao?: CondicaoDevolucao
       now: Date
     },
     db: Db,
   ): Promise<Movimentacao> {
     const [result] = await db.execute<ResultSetHeader>(
-      `INSERT INTO movimentacao (id_item_solicitado, id_coordenador, tipo_movimentacao, data_hora_real, observacao, responsavel)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO movimentacao (id_item_solicitado, id_coordenador, tipo_movimentacao, data_hora_real, observacao, responsavel, condicao_devolucao)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         parseId(data.itemId) ?? 0,
         parseId(data.registradoPorId) ?? 0,
@@ -215,6 +244,7 @@ export const movimentacaoRepository = {
         toDbDateTime(data.now),
         data.observacao ?? null,
         data.responsavel,
+        data.condicao ?? null,
       ],
     )
     return {
@@ -227,6 +257,7 @@ export const movimentacaoRepository = {
       responsavel: data.responsavel,
       registradoEm: data.now.toISOString(),
       observacao: data.observacao,
+      condicao: data.condicao,
     }
   },
 }

@@ -154,7 +154,7 @@ describe('revogar autorização com chave em andamento', () => {
   it('a chave em posse ainda pode ser devolvida', async () => {
     const ctx = await start(NOW)
     await send(ctx, 'patch', '/admin/autorizacoes/1001', { active: false })
-    const devolucao = await send(ctx, 'post', '/movimentacoes/devolucoes', { requestId: '1005', itemId: '1008' })
+    const devolucao = await send(ctx, 'post', '/movimentacoes/devolucoes', { requestId: '1005', itemId: '1008', condition: 'INTEGRO' })
     expect(devolucao.status).toBe(201)
   })
 

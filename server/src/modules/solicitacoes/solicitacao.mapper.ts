@@ -30,6 +30,7 @@ export function toSolicitacaoView(solicitacao: Solicitacao, salas: Sala[]) {
       updatedAt: item.atualizadoEm,
       statusLabel: ROTULO_STATUS[item.status],
       refusalReason: item.motivoRecusa ?? null,
+      decidedAt: item.decididoEm ?? null,
     })),
   };
 }

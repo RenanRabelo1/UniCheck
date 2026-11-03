@@ -5,14 +5,17 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { RequestConfirmationScreen } from "./components/RequestConfirmationScreen";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  window.history.replaceState(null, "", "/");
+});
 
 describe("fluxos principais do frontend", () => {
   it("navega do painel do professor para uma nova solicitação e encerra a sessão", async () => {
     render(<App />);
 
     fireEvent.change(
-      screen.getByLabelText("E-mail institucional ou matrícula"),
+      screen.getByLabelText(/^(Matrícula|E-mail institucional)$/),
       {
         target: { value: "2048819" },
       },
@@ -52,7 +55,7 @@ describe("fluxos principais do frontend", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "Coordenador CCT" }));
     fireEvent.change(
-      screen.getByLabelText("E-mail institucional ou matrícula"),
+      screen.getByLabelText(/^(Matrícula|E-mail institucional)$/),
       {
         target: { value: "18024900" },
       },
@@ -72,7 +75,7 @@ describe("fluxos principais do frontend", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "Aluno" }));
     fireEvent.change(
-      screen.getByLabelText("E-mail institucional ou matrícula"),
+      screen.getByLabelText(/^(Matrícula|E-mail institucional)$/),
       {
         target: { value: "aluno.autorizado@unifor.br" },
       },
@@ -91,7 +94,7 @@ describe("fluxos principais do frontend", () => {
     render(<App />);
 
     fireEvent.change(
-      screen.getByLabelText("E-mail institucional ou matrícula"),
+      screen.getByLabelText(/^(Matrícula|E-mail institucional)$/),
       {
         target: { value: "2048819" },
       },
@@ -115,7 +118,7 @@ describe("fluxos principais do frontend", () => {
     render(<App />);
 
     fireEvent.change(
-      screen.getByLabelText("E-mail institucional ou matrícula"),
+      screen.getByLabelText(/^(Matrícula|E-mail institucional)$/),
       {
         target: { value: "2048819" },
       },

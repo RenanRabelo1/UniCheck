@@ -1,4 +1,5 @@
 import type { FormEvent } from "react";
+import { isApiMode } from "../../services/api";
 import {
   demoRoles,
   quickAccess,
@@ -98,8 +99,10 @@ export function DemoLogin({
             <label htmlFor="identifier">{identifierLabel}</label>
             <input
               id="identifier"
-              type="text"
+              type={role === "student" ? "email" : "text"}
               value={identifier}
+              aria-invalid={messageType === "error" && Boolean(message)}
+              aria-describedby={message ? "login-message" : undefined}
               onChange={(event) => onIdentifierChange(event.target.value)}
               placeholder={identifierPlaceholder}
               autoComplete="username"
@@ -114,6 +117,8 @@ export function DemoLogin({
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
+                aria-invalid={messageType === "error" && Boolean(message)}
+                aria-describedby={message ? "login-message" : undefined}
                 onChange={(event) => onPasswordChange(event.target.value)}
                 placeholder="••••••••"
                 autoComplete="current-password"
@@ -129,7 +134,11 @@ export function DemoLogin({
             </div>
 
             {message && (
-              <p className={`form-message ${messageType}`} role="status">
+              <p
+                id="login-message"
+                className={`form-message ${messageType}`}
+                role={messageType === "error" ? "alert" : "status"}
+              >
                 {message}
               </p>
             )}
@@ -141,33 +150,39 @@ export function DemoLogin({
 
           <p className="auth-switch">
             Ainda não tem conta?{" "}
-            <button type="button" className="link-button" onClick={onCreateAccount}>
+            <button
+              type="button"
+              className="link-button"
+              onClick={onCreateAccount}
+            >
               Criar conta
             </button>
           </p>
 
-          <div className="quick-access">
-            <p>Acesso rápido (demonstração)</p>
-            {quickAccess.map((item, index) => (
-              <button
-                key={item.identifier}
-                type="button"
-                className={
-                  index === quickAccess.length - 1
-                    ? "quick-item dashed"
-                    : "quick-item"
-                }
-                onClick={() => onQuickAccess(item)}
-              >
-                <span>{item.label}</span>
-                <small>{item.identifier}</small>
-              </button>
-            ))}
-            <small className="hint">
-              Os dados são apenas demonstrativos; a validação real será feita
-              pela API.
-            </small>
-          </div>
+          {!isApiMode() && (
+            <div className="quick-access">
+              <p>Acesso rápido (demonstração)</p>
+              {quickAccess.map((item, index) => (
+                <button
+                  key={item.identifier}
+                  type="button"
+                  className={
+                    index === quickAccess.length - 1
+                      ? "quick-item dashed"
+                      : "quick-item"
+                  }
+                  onClick={() => onQuickAccess(item)}
+                >
+                  <span>{item.label}</span>
+                  <small>{item.identifier}</small>
+                </button>
+              ))}
+              <small className="hint">
+                Os dados são apenas demonstrativos; a validação real será feita
+                pela API.
+              </small>
+            </div>
+          )}
         </div>
 
         <aside className="info-panel">

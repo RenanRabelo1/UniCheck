@@ -158,7 +158,7 @@ export function NewRequestScreen({
   }
 
   return (
-    <main className="request-page">
+    <main className="request-page" id="conteudo" tabIndex={-1}>
       <AppTopNav
         user={session}
         active="new"

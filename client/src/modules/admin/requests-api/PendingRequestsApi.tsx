@@ -40,7 +40,7 @@ export function PendingRequestsApi({
     setPage(1);
   }
   return (
-    <main
+    <section
       className="pending-requests admin-requests-api"
       aria-labelledby="pending-title"
     >
@@ -212,6 +212,6 @@ export function PendingRequestsApi({
           )}
         </section>
       )}
-    </main>
+    </section>
   );
 }

@@ -62,7 +62,7 @@ describe('verificação de atrasos (22:40)', () => {
     const devolucao = await request(ctx.app)
       .post('/movimentacoes/devolucoes')
       .set('Authorization', ctx.coord)
-      .send({ requestId: '1003', itemId: '1004' })
+      .send({ requestId: '1003', itemId: '1004', condition: 'INTEGRO' })
     expect(devolucao.body.wasLate).toBe(true)
 
     const abertos = await request(ctx.app).get('/alertas').set('Authorization', ctx.coord)

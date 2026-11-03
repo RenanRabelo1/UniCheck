@@ -8,6 +8,15 @@ export async function login(req: Request, res: Response) {
   res.json(await authService.login(input))
 }
 
+export function me(req: Request, res: Response) {
+  res.json(authService.me(req.auth!.usuario))
+}
+
+export async function logout(req: Request, res: Response) {
+  await authService.logout(req.auth!.sessao)
+  res.status(204).end()
+}
+
 export async function register(req: Request, res: Response) {
   const input = parseOrThrow(registerSchema, req.body ?? {})
   res.status(201).json(await authService.register(input))

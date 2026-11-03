@@ -1,4 +1,4 @@
-import type { StatusItem } from '../../database/types.js'
+import type { CondicaoDevolucao, StatusItem } from '../../database/types.js'
 
 // Agrupamentos de status usados pelo painel. Centralizados para evitar textos soltos.
 export const STATUS_PENDENTES: StatusItem[] = ['PENDENTE']
@@ -17,6 +17,12 @@ export const ROTULO_STATUS: Record<StatusItem, string> = {
   DEVOLVIDO: 'Devolvido',
   RECUSADO: 'Recusado',
   ATRASADO: 'Em atraso',
+}
+
+export const ROTULO_CONDICAO: Record<CondicaoDevolucao, string> = {
+  INTEGRO: 'Íntegro',
+  AVARIADO: 'Avariado',
+  INCOMPLETO: 'Incompleto',
 }
 
 // Lista completa, usada para validar o filtro `status` das rotas administrativas.

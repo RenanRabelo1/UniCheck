@@ -30,7 +30,7 @@ describe('disponibilidade da chave (RF21.9)', () => {
     const emAtraso = await request(ctx.app).get('/admin/chaves').set('Authorization', ctx.coord)
     expect(emAtraso.body.find((chave: { id: string }) => chave.id === '1001').inPossession).toBe(true)
 
-    await send(ctx, 'post', '/movimentacoes/devolucoes', { requestId: '1005', itemId: '1008' })
+    await send(ctx, 'post', '/movimentacoes/devolucoes', { requestId: '1005', itemId: '1008', condition: 'INTEGRO' })
     const devolvida = await request(ctx.app).get('/admin/chaves').set('Authorization', ctx.coord)
     expect(devolvida.body.find((chave: { id: string }) => chave.id === '1001').inPossession).toBe(false)
   })

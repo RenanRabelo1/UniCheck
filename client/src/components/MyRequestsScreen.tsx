@@ -136,7 +136,7 @@ export function MyRequestsScreen({
     );
 
   return (
-    <main className="my-requests-page">
+    <main className="my-requests-page" id="conteudo" tabIndex={-1}>
       <AppTopNav
         user={session}
         active="requests"

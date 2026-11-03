@@ -1,3 +1,4 @@
+import { SkipLink } from "../components/SkipLink";
 import { isApiMode } from "../services/api";
 import type { ReactNode } from "react";
 
@@ -47,6 +48,7 @@ export function AdminWorkspace({
   const connected = isApiMode() && connectedViews.includes(activeView);
   return (
     <div className="admin-workspace">
+      <SkipLink />
       <header className="admin-workspace__header">
         <div>
           <button
@@ -89,7 +91,9 @@ export function AdminWorkspace({
         ))}
       </nav>
 
-      {children}
+      <main id="conteudo" tabIndex={-1}>
+        {children}
+      </main>
     </div>
   );
 }

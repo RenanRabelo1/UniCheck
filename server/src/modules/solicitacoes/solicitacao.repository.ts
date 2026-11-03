@@ -2,10 +2,10 @@ import { randomUUID } from 'node:crypto'
 import type { ResultSetHeader, RowDataPacket } from 'mysql2/promise'
 import { pool } from '../../database/connection.js'
 import { parseId, toHm, type Db } from '../../database/sql.js'
-import type { ItemSolicitacao, Sala, Solicitacao, StatusItem, TipoItem } from '../../database/types.js'
+import type { CondicaoDevolucao, ItemSolicitacao, Sala, Solicitacao, StatusItem, TipoChave, TipoItem } from '../../database/types.js'
 import { fromDbDateTime, toDbDateTime } from '../../utils/dates.js'
 import { chaveRepository } from '../chaves/chave.repository.js'
-import { STATUS_EM_POSSE } from './solicitacao.status.js'
+import { ROTULO_CONDICAO, STATUS_EM_POSSE } from './solicitacao.status.js'
 
 export type ItemDoUsuario = ItemSolicitacao & {
   solicitacaoId: string
@@ -33,6 +33,7 @@ type ItemRow = RowDataPacket & {
   quantidade_solicitada: number
   status_item: StatusItem
   motivo_recusa: string | null
+  data_hora_decisao: string | null
   nome_item: string
   detalhe_item: string | null
   data_hora_atualizacao: string
@@ -51,6 +52,7 @@ const toItem = (row: ItemRow): ItemSolicitacao => ({
   atualizadoEm: fromDbDateTime(row.data_hora_atualizacao),
   motivoRecusa: row.motivo_recusa ?? undefined,
   decididoPorId: row.id_coordenador_decisao === null ? undefined : String(row.id_coordenador_decisao),
+  decididoEm: row.data_hora_decisao ? fromDbDateTime(row.data_hora_decisao) : undefined,
 })
 
 const toCabecalho = (row: SolicitacaoRow): CabecalhoSolicitacao => ({
@@ -169,10 +171,11 @@ export const solicitacaoRepository = {
         responsavel: string | null
         atendente: string | null
         observacao: string | null
+        condicao_devolucao: CondicaoDevolucao | null
       })[]
     >(
       `SELECT m.id_movimentacao, m.id_item_solicitado, i.nome_item, m.tipo_movimentacao, m.data_hora_real,
-              m.responsavel, u.nome AS atendente, m.observacao
+              m.responsavel, u.nome AS atendente, m.observacao, m.condicao_devolucao
        FROM movimentacao m
        JOIN item_solicitado i ON i.id_item_solicitado = m.id_item_solicitado
        LEFT JOIN usuario u ON u.id_usuario = m.id_coordenador
@@ -193,6 +196,7 @@ export const solicitacaoRepository = {
         responsible: m.responsavel ?? '',
         attendant: m.atendente ?? 'Não informado',
         notes: m.observacao ?? null,
+        condition: m.condicao_devolucao ? ROTULO_CONDICAO[m.condicao_devolucao] : null,
       })),
     }
   },
@@ -281,6 +285,9 @@ export const solicitacaoRepository = {
       atualizadoEm?: Date
       motivoRecusa?: string
       decididoPorId?: string
+      /** Chave física entregue na retirada: pode ser outra chave da mesma sala. */
+      chaveEntregue?: { id: string; tipo: TipoChave; nome: string }
+      condicaoDevolucao?: CondicaoDevolucao
     },
     db: Db,
   ): Promise<void> {
@@ -293,6 +300,14 @@ export const solicitacaoRepository = {
     if (change.decididoPorId !== undefined) {
       sets.push('id_coordenador_decisao = ?', 'data_hora_decisao = ?', 'motivo_recusa = ?')
       params.push(parseId(change.decididoPorId) ?? 0, toDbDateTime(change.atualizadoEm ?? new Date()), change.motivoRecusa ?? null)
+    }
+    if (change.chaveEntregue) {
+      sets.push('id_chave = ?', 'tipo_chave_entregue = ?', 'nome_item = ?')
+      params.push(parseId(change.chaveEntregue.id) ?? 0, change.chaveEntregue.tipo, change.chaveEntregue.nome)
+    }
+    if (change.condicaoDevolucao) {
+      sets.push('condicao_devolucao = ?')
+      params.push(change.condicaoDevolucao)
     }
     await db.execute(`UPDATE item_solicitado SET ${sets.join(', ')} WHERE id_item_solicitado = ?`, [...params, parseId(itemId) ?? 0])
   },

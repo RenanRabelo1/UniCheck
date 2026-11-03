@@ -8,6 +8,7 @@ import { routes } from './routes/index.js'
 export function createApp() {
   const app = express()
 
+  app.set('trust proxy', config.trustProxy)
   app.use(helmet())
   app.use(cors({ origin: config.corsOrigins }))
   app.use(express.json())
